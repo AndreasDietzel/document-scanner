@@ -113,12 +113,21 @@ async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise
           
           const tempDir = '/tmp';
           const timestamp = Date.now();
-          const tempPng = path.join(tempDir, `pdf-page-${timestamp}`);
-          const tempOcr = path.join(tempDir, `ocr-${timestamp}`);
+          
+          // WORKAROUND: Kopiere PDF nach /tmp um Probleme mit komplexen Pfaden (iCloud, Spaces) zu vermeiden
+          const tempPdf = path.join(tempDir, `input-pdf-${timestamp}.pdf`);
+          fs.copyFileSync(filePath, tempPdf);
+          
+          const tempPdfBase = `input-pdf-${timestamp}.pdf`;
+          const tempPngBase = `pdf-page-${timestamp}`;
+          const tempOcrBase = `ocr-${timestamp}`;
+          const tempPng = path.join(tempDir, tempPngBase);
+          const tempOcr = path.join(tempDir, tempOcrBase);
           
           // Konvertiere erste Seite zu PNG (-singlefile = nur erste Seite, -png = PNG Format)
-          const convertCmd = `pdftoppm -singlefile -png "${filePath}" "${tempPng}"`;
-          execSync(convertCmd, { timeout: 30000 });
+          // Benutze relative Pfade mit cwd=/tmp für bessere Kompatibilität
+          const convertCmd = `pdftoppm -singlefile -png "${tempPdfBase}" "${tempPngBase}"`;
+          execSync(convertCmd, { timeout: 30000, cwd: tempDir, encoding: 'utf8' });
           
           const pngFile = `${tempPng}.png`;
           
@@ -128,13 +137,16 @@ async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise
           }
           
           // OCR auf PNG anwenden (--psm 1 = Automatic page segmentation with OSD)
-          const ocrCmd = `tesseract "${pngFile}" "${tempOcr}" -l ${ocrLang} --psm 1 2>/dev/null`;
-          execSync(ocrCmd, { timeout: 30000 });
+          const pngFileBase = `${tempPngBase}.png`;
+          const ocrCmd = `tesseract "${pngFileBase}" "${tempOcrBase}" -l ${ocrLang} --psm 1`;
+          if (VERBOSE) console.log(chalk.gray(`   Führe aus: ${ocrCmd}`));
+          execSync(ocrCmd, { timeout: 30000, cwd: tempDir, encoding: 'utf8' });
           
           const ocrText = fs.readFileSync(`${tempOcr}.txt`, 'utf8');
           
           // Cleanup
           try {
+            fs.unlinkSync(tempPdf);
             fs.unlinkSync(pngFile);
             fs.unlinkSync(`${tempOcr}.txt`);
           } catch (cleanupError) {
@@ -148,7 +160,9 @@ async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise
           return ocrText.trim();
         } catch (ocrError) {
           if (VERBOSE) {
-            console.log(chalk.yellow("⚠️  OCR fehlgeschlagen. Stelle sicher dass poppler-utils installiert ist:"));
+            console.log(chalk.yellow("⚠️  OCR fehlgeschlagen:"));
+            console.log(chalk.red(`   Fehler: ${ocrError instanceof Error ? ocrError.message : String(ocrError)}`));
+            console.log(chalk.gray("   Stelle sicher dass poppler und tesseract installiert sind:"));
             console.log(chalk.gray("   brew install poppler tesseract tesseract-lang"));
           }
         }

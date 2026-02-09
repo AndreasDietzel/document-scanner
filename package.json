@@ -1,6 +1,6 @@
 {
   "name": "mcp-document-scanner",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "description": "Intelligent document scanning and renaming CLI with AI support (Perplexity), OCR, and ISO 25010 security for macOS",
   "type": "module",
   "main": "build/cli.js",
