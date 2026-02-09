@@ -8,7 +8,28 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 [![macOS](https://img.shields.io/badge/macOS-Monterey%2B-blue)](https://www.apple.com/macos/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
 [![OCR](https://img.shields.io/badge/OCR-Tesseract-orange)](https://github.com/tesseract-ocr/tesseract)
-[![Version](https://img.shields.io/badge/Version-2.1.0-brightgreen)](package.json)
+[![Version](https://img.shields.io/badge/Version-2.2.0-brightgreen)](package.json)
+[![Security](https://img.shields.io/badge/Security-ISO%2025010-blue)](SECURITY.md)
+
+---
+
+## ✨ Features v2.2 - Security & OCR Fixes
+
+### 🔒 **NEU: Security & ISO 25010 Compliance**
+- **Input Validation**: Path Traversal Protection, File Size Limits (100MB)
+- **API Key Protection**: Sichere lokale Speicherung, Permission Checks
+- **Enhanced .gitignore**: Secrets/Keys werden automatisch geschützt
+- **Graceful Degradation**: Fallback bei Fehlern, keine Crashes
+
+### 🛠️ **NEU: Robuste macOS Quick Action**
+- **Funktioniert überall**: Downloads, Desktop, externe Laufwerke - keine Pfad-Einschränkungen!
+- **Kein nvm-Fehler mehr**: Robuste NODE_PATH Erkennung
+- **Unterstützt .doc**: Neben .docx auch alte Word-Formate
+
+### 📄 **FIX: Gescannte PDFs**
+- **PDF → PNG → OCR Workflow**: pdftoppm-Integration für gescannte Dokumente
+- **Config-basierte Sprache**: Nutzt OCR-Sprache aus Config
+- **Automatisches Cleanup**: Temporäre Dateien werden sicher gelöscht
 
 ---
 
@@ -234,7 +255,7 @@ mcp-scan file.pdf --preview --verbose
 
 ## 📖 Verwendung
 
-Siehe [MACOS-QUICK-ACTION.md](MACOS-QUICK-ACTION.md) für detaillierte Anleitung.
+Siehe [MACOS-KONTEXTMENU.md](MACOS-KONTEXTMENU.md) für detaillierte Anleitung.
 
 **Kurzfassung:**
 1. Automator öffnen → Schnellaktion erstellen
@@ -444,13 +465,21 @@ mcp-scan datei.pdf --silent  # Zeigt Console-Output
 ```
 mcp-document-scanner/
 ├── src/
-│   └── cli.ts              # Haupt-CLI Tool
+│   ├── cli.ts              # Haupt-CLI Tool
+│   ├── config.ts           # Konfigurationsmanagement
+│   ├── categories.ts       # Firmenkategorisierung
+│   ├── security.ts         # Security & Validierung
+│   ├── ai-analysis.ts      # Perplexity AI Integration
+│   ├── setup.ts            # Setup-Wizard
+│   └── undo.ts             # Undo-Funktionalität
 ├── build/                  # Kompilierte JavaScript-Dateien
 ├── test-data/              # Testdateien
 ├── package.json
 ├── tsconfig.json
 ├── README.md
-├── MACOS-QUICK-ACTION.md   # macOS Setup-Anleitung
+├── MACOS-KONTEXTMENU.md    # macOS Kontextmenü Setup
+├── AI-INTEGRATION.md       # AI Setup & Verwendung
+├── SECURITY.md             # Security Best Practices
 └── LICENSE
 ```
 
@@ -482,7 +511,9 @@ mcp-scan test-data/test.txt --preview
 
 ## 📚 Weiterführende Dokumentation
 
-- [MACOS-QUICK-ACTION.md](MACOS-QUICK-ACTION.md) - Automator Setup & Troubleshooting
+- [MACOS-KONTEXTMENU.md](MACOS-KONTEXTMENU.md) - Automator Setup & Troubleshooting
+- [AI-INTEGRATION.md](AI-INTEGRATION.md) - Perplexity AI Setup & Verwendung
+- [SECURITY.md](SECURITY.md) - Security Best Practices & ISO 25010
 - [CHANGELOG.md](CHANGELOG.md) - Versionshistorie
 - [LICENSE](LICENSE) - MIT Lizenz
 

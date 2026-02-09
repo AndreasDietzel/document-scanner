@@ -2,6 +2,11 @@
 
 **Ziel:** MCP Document Scanner direkt aus dem Finder-Kontextmenü aufrufen
 
+**✨ NEU in v2.2:** 
+- ✅ **Funktioniert überall** - Downloads, Desktop, Dokumente, externe Laufwerke, etc.
+- ✅ **Kein nvm-Fehler mehr** - Robuste PATH-Erkennung
+- ✅ **Unterstützt .doc Dateien** - Nicht nur .docx
+
 ---
 
 ## 📋 Voraussetzungen
@@ -45,14 +50,20 @@
 ```bash
 #!/bin/zsh
 
-# Node.js Path sicherstellen (bei nvm/brew Installation)
-export PATH="/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node/ | tail -1)/bin:$PATH"
+# Node.js Path sicherstellen (funktioniert mit npm global oder nvm)
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
 
-# Für jede ausgewählte Datei
+# Optional: nvm support (nur wenn installiert)
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  NVM_NODE=$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)
+  [ -n "$NVM_NODE" ] && export PATH="$HOME/.nvm/versions/node/$NVM_NODE/bin:$PATH"
+fi
+
+# Für jede ausgewählte Datei (KEINE Pfad-Einschränkungen!)
 for file in "$@"
 do
-  # Nur PDFs, DOCX, Pages, TXT, Bilder
-  if [[ "$file" =~ \.(pdf|docx|pages|txt|png|jpg|jpeg)$ ]]; then
+  # Nur Dateityp prüfen, nicht Pfad - funktioniert überall (Downloads, Desktop, etc.)
+  if [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg)$ ]]; then
     mcp-scan "$file" --preview --verbose
   fi
 done
@@ -66,16 +77,22 @@ osascript -e 'display notification "Analyse abgeschlossen" with title "MCP Scann
 #!/bin/zsh
 
 # Node.js Path sicherstellen
-export PATH="/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node/ | tail -1)/bin:$PATH"
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+# Optional: nvm support (nur wenn installiert)
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  NVM_NODE=$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)
+  [ -n "$NVM_NODE" ] && export PATH="$HOME/.nvm/versions/node/$NVM_NODE/bin:$PATH"
+fi
 
 # Zähler für Statistik
 renamed=0
 skipped=0
 
-# Für jede ausgewählte Datei
+# Für jede ausgewählte Datei (funktioniert überall!)
 for file in "$@"
 do
-  if [[ "$file" =~ \.(pdf|docx|pages|txt|png|jpg|jpeg)$ ]]; then
+  if [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg)$ ]]; then
     result=$(mcp-scan "$file" --execute --silent 2>&1)
     
     if echo "$result" | grep -q "Erfolgreich umbenannt"; then
@@ -95,7 +112,13 @@ osascript -e "display notification \"$renamed umbenannt, $skipped übersprungen\
 #!/bin/zsh
 
 # Node.js Path sicherstellen
-export PATH="/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/$(ls $HOME/.nvm/versions/node/ | tail -1)/bin:$PATH"
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+# Optional: nvm support (nur wenn installiert)
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  NVM_NODE=$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)
+  [ -n "$NVM_NODE" ] && export PATH="$HOME/.nvm/versions/node/$NVM_NODE/bin:$PATH"
+fi
 
 # Anzahl Dateien
 count=$#
@@ -105,14 +128,14 @@ message="$count Datei(en) analysieren und umbenennen?"
 response=$(osascript -e "button returned of (display dialog \"$message\" buttons {\"Abbrechen\", \"Nur Vorschau\", \"Umbenennen\"} default button 3 with icon caution)")
 
 if [ "$response" = "Umbenennen" ]; then
-  # Execute-Modus
+  # Execute-Modus (funktioniert überall!)
   for file in "$@"; do
-    [[ "$file" =~ \.(pdf|docx|pages|txt|png|jpg|jpeg)$ ]] && mcp-scan "$file" --execute
+    [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg)$ ]] && mcp-scan "$file" --execute
   done
 elif [ "$response" = "Nur Vorschau" ]; then
-  # Preview-Modus
+  # Preview-Modus (funktioniert überall!)
   for file in "$@"; do
-    [[ "$file" =~ \.(pdf|docx|pages|txt|png|jpg|jpeg)$ ]] && mcp-scan "$file" --preview
+    [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg)$ ]] && mcp-scan "$file" --preview
   done
 fi
 ```
@@ -221,17 +244,48 @@ if [[ "$file" =~ \.(pdf|docx|pages)$ ]]; then
 
 ### Problem: "mcp-scan: command not found"
 
-**Lösung:** NPM-Path fehlt im Script
+**Ursache:** NPM-Path fehlt im Script oder `npm link` nicht ausgeführt
 
+**Lösung 1:** Prüfe ob npm link korrekt ist
 ```bash
-# Ersetze die PATH-Zeile durch:
-export PATH="/usr/local/bin:/opt/homebrew/bin:$HOME/.nvm/versions/node/v22.6.0/bin:$PATH"
+which mcp-scan
+# Sollte zeigen: /usr/local/bin/mcp-scan oder /opt/homebrew/bin/mcp-scan
 
-# Oder finde deinen Node-Path:
-which node
-# z.B. /Users/deinname/.nvm/versions/node/v22.6.0/bin/node
+# Falls nicht, npm link neu ausführen:
+cd ~/Projects/mcp-document-scanner
+npm link
+```
 
-# Dann nutze das Verzeichnis in der PATH-Zeile
+**Lösung 2:** Nutze das aktualisierte robuste Script (siehe oben)
+- Das neue Script prüft mehrere Pfade
+- Funktioniert mit npm global UND nvm
+- Keine Fehler mehr bei fehlendem nvm
+
+**Lösung 3:** Falls nvm genutzt wird, prüfe Installation
+```bash
+ls ~/.nvm/versions/node/
+# Sollte installierte Node-Versionen zeigen
+```
+
+### Problem: "ls: /Users/.../nvm/versions/node/: No such file or directory"
+
+**Ursache:** Altes Script mit fehlerhafter nvm-Erkennung
+
+**Lösung:** Nutze das aktualisierte Script (siehe Variante A, B oder C oben)
+- ✅ Neues Script prüft erst, ob nvm existiert
+- ✅ Keine Fehler mehr, auch ohne nvm
+- ✅ Funktioniert überall (Downloads, Desktop, etc.)
+
+**Quick Fix:** Ersetze in deinem bestehenden Quick Action die PATH-Zeile durch:
+```bash
+# Robuste Version
+export PATH="/usr/local/bin:/opt/homebrew/bin:$PATH"
+
+# Optional: nvm support (nur wenn installiert)
+if [ -d "$HOME/.nvm/versions/node" ]; then
+  NVM_NODE=$(ls -t "$HOME/.nvm/versions/node" 2>/dev/null | head -1)
+  [ -n "$NVM_NODE" ] && export PATH="$HOME/.nvm/versions/node/$NVM_NODE/bin:$PATH"
+fi
 ```
 
 ### Problem: Keine Benachrichtigung

@@ -231,6 +231,6 @@ anbei die Unterlagen zu Ihrer Versicherungspolice...
 
 ---
 
-**Version**: 2.1.0  
+**Version**: 2.2.0  
 **Autor**: Andreas Dietzel  
 **Lizenz**: MIT
