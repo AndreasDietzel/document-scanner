@@ -1,0 +1,50 @@
+{
+  "name": "mcp-document-scanner",
+  "version": "1.0.0",
+  "description": "Intelligent document scanning and renaming CLI with OCR support for macOS",
+  "type": "module",
+  "main": "build/cli.js",
+  "bin": {
+    "mcp-scan": "./build/cli.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node build/cli.js",
+    "test": "node build/cli.js test-data/*.txt --preview",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "ocr",
+    "document-management",
+    "filename-generation",
+    "tesseract",
+    "pdf-parse",
+    "macos",
+    "cli",
+    "automation",
+    "batch-processing",
+    "intelligent-naming"
+  ],
+  "author": "Andreas Dietzel",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AndreasDietzel/mcp-document-scanner.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AndreasDietzel/mcp-document-scanner/issues"
+  },
+  "homepage": "https://github.com/AndreasDietzel/mcp-document-scanner#readme",
+  "dependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "adm-zip": "^0.5.16",
+    "mammoth": "^1.11.0",
+    "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/pdf-parse": "^1.1.5",
+    "typescript": "^5.7.2"
+  }
+}
