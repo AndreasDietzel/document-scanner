@@ -120,13 +120,21 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 
 ### 📄 Multi-Format Unterstützung
 
-- ✅ **PDF** (auch gescannte mit OCR)
-- ✅ **DOCX** (Microsoft Word)
-- ⚠️ **DOC** (Alte Word-Formate - limitiert, wird als "unlesbar" markiert)
-- ✅ **Pages** (Apple Pages)
-- ✅ **PNG/JPG/JPEG** (Bilder mit OCR)
-- ✅ **TXT** (Textdateien mit UTF-8/Latin-1)
-- 📦 **RAR/ZIP** (Archive - kein Text extrahierbar, Dateiname wird beibehalten)
+#### ✅ Vollständige Textextraktion
+- **PDF** (auch gescannte mit OCR)
+- **DOCX** (Microsoft Word - neues Format)
+- **Pages** (Apple Pages)
+- **TXT** (Textdateien mit UTF-8/Latin-1)
+- **PNG/JPG/JPEG** (Bilder mit OCR)
+
+#### ⚠️ Limitierte Unterstützung (Dateiname wird beibehalten mit Hinweis)
+- **DOC** (Microsoft Word - altes Format, wird als "unlesbar" markiert)
+- **XLS/XLSX** (Microsoft Excel - kein Text extrahierbar)
+- **PPT/PPTX** (Microsoft PowerPoint - kein Text extrahierbar)
+- **Numbers** (Apple Tabellenkalkulation)
+- **Keynote** (Apple Präsentationen)
+- **ODT/ODS/ODP** (OpenOffice/LibreOffice Dokumente)
+- **RAR/ZIP/7Z** (Archive - kein Textinhalt)
 
 ### 🚀 Batch-Verarbeitung
 

@@ -5,7 +5,7 @@
 **✨ NEU in v2.2:** 
 - ✅ **Funktioniert überall** - Downloads, Desktop, Dokumente, externe Laufwerke, etc.
 - ✅ **Kein nvm-Fehler mehr** - Robuste PATH-Erkennung
-- ✅ **Unterstützt .doc Dateien** - Nicht nur .docx
+- ✅ **Alle Office-Formate** - Word (.doc/.docx), Excel (.xls/.xlsx), PowerPoint (.ppt/.pptx), OpenOffice (.odt/.ods/.odp)
 
 ---
 
@@ -63,7 +63,7 @@ fi
 for file in "$@"
 do
   # Nur Dateityp prüfen, nicht Pfad - funktioniert überall (Downloads, Desktop, etc.)
-  if [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg|rar|zip)$ ]]; then
+  if [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]]; then
     mcp-scan "$file" --preview --verbose
   fi
 done
@@ -92,7 +92,7 @@ skipped=0
 # Für jede ausgewählte Datei (funktioniert überall!)
 for file in "$@"
 do
-  if [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg|rar|zip)$ ]]; then
+  if [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]]; then
     result=$(mcp-scan "$file" --execute --silent 2>&1)
     
     if echo "$result" | grep -q "Erfolgreich umbenannt"; then
@@ -130,12 +130,12 @@ response=$(osascript -e "button returned of (display dialog \"$message\" buttons
 if [ "$response" = "Umbenennen" ]; then
   # Execute-Modus (funktioniert überall!)
   for file in "$@"; do
-    [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg|rar|zip)$ ]] && mcp-scan "$file" --execute
+    [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]] && mcp-scan "$file" --execute
   done
 elif [ "$response" = "Nur Vorschau" ]; then
   # Preview-Modus (funktioniert überall!)
   for file in "$@"; do
-    [[ "$file" =~ \.(pdf|docx|doc|pages|txt|png|jpg|jpeg|rar|zip)$ ]] && mcp-scan "$file" --preview
+    [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]] && mcp-scan "$file" --preview
   done
 fi
 ```

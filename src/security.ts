@@ -24,9 +24,20 @@ export const SECURITY_LIMITS = {
 
 // Allowed file extensions (whitelist approach)
 const ALLOWED_EXTENSIONS = [
-  '.pdf', '.doc', '.docx', '.pages', '.txt',
+  // Documents
+  '.pdf', '.txt',
+  // Microsoft Office
+  '.doc', '.docx',      // Word
+  '.xls', '.xlsx',      // Excel
+  '.ppt', '.pptx',      // PowerPoint
+  // Apple
+  '.pages', '.numbers', '.keynote',
+  // OpenOffice/LibreOffice
+  '.odt', '.ods', '.odp',
+  // Images
   '.png', '.jpg', '.jpeg', '.tiff', '.bmp',
-  '.rar', '.zip'  // Archives: Nur Metadaten, kein Textinhalt
+  // Archives
+  '.rar', '.zip', '.7z'
 ];
 
 /**

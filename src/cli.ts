@@ -227,20 +227,52 @@ async function extractText(filePath: string, config: ScanConfig): Promise<string
       return await extractTextWithOCR(filePath, config);
     }
     
+    // Microsoft Word
     if (ext === '.docx' || ext === '.doc') {
       try {
         const result = await mammoth.extractRawText({ path: filePath });
         return result.value;
       } catch (docError) {
-        if (ext === '.doc' && VERBOSE) {
-          console.log(chalk.yellow('⚠️  .doc Format nicht lesbar (nur .docx unterstützt)'));
+        if (VERBOSE) {
+          if (ext === '.doc') {
+            console.log(chalk.yellow('⚠️  .doc Format nicht lesbar (nur .docx unterstützt)'));
+          } else {
+            console.log(chalk.yellow('⚠️  Word-Dokument konnte nicht gelesen werden'));
+          }
         }
         return '';  // Führt zu "unlesbar" Markierung
       }
     }
     
-    if (ext === '.rar' || ext === '.zip') {
-      // Archive-Dateien enthalten keinen extrahierbaren Text
+    // Microsoft Excel
+    if (ext === '.xls' || ext === '.xlsx') {
+      if (VERBOSE) console.log(chalk.yellow('⚠️  Excel-Datei - kein Text extrahierbar (nutze Dateinamen)'));
+      return '';
+    }
+    
+    // Microsoft PowerPoint
+    if (ext === '.ppt' || ext === '.pptx') {
+      if (VERBOSE) console.log(chalk.yellow('⚠️  PowerPoint-Datei - kein Text extrahierbar (nutze Dateinamen)'));
+      return '';
+    }
+    
+    // Apple Office
+    if (ext === '.numbers' || ext === '.keynote') {
+      if (VERBOSE) console.log(chalk.yellow(`⚠️  ${ext.slice(1).charAt(0).toUpperCase() + ext.slice(2)}-Datei - kein Text extrahierbar`));
+      return '';
+    }
+    
+    // OpenOffice/LibreOffice
+    if (ext === '.odt' || ext === '.ods' || ext === '.odp') {
+      if (VERBOSE) {
+        const type = ext === '.odt' ? 'Text' : ext === '.ods' ? 'Tabelle' : 'Präsentation';
+        console.log(chalk.yellow(`⚠️  OpenOffice ${type}-Datei - kein Text extrahierbar`));
+      }
+      return '';
+    }
+    
+    // Archive
+    if (ext === '.rar' || ext === '.zip' || ext === '.7z') {
       if (VERBOSE) console.log(chalk.yellow('⚠️  Archive-Datei - kein Text extrahierbar'));
       return '';
     }
@@ -538,7 +570,14 @@ async function processFile(
   }
   
   const ext = path.extname(filePath).toLowerCase();
-  const supported = ['.pdf', '.doc', '.docx', '.pages', '.png', '.jpg', '.jpeg', '.txt', '.rar', '.zip'];
+  const supported = [
+    '.pdf', '.txt',
+    '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',  // MS Office
+    '.pages', '.numbers', '.keynote',  // Apple
+    '.odt', '.ods', '.odp',  // OpenOffice
+    '.png', '.jpg', '.jpeg',  // Images
+    '.rar', '.zip', '.7z'  // Archives
+  ];
   
   if (!supported.includes(ext)) {
     console.error(chalk.red(`\u274c Format ${ext} nicht unterst\u00fctzt`));
