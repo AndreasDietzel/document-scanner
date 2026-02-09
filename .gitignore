@@ -14,6 +14,21 @@ dist/
 # Keep source
 !src/**/*.ts
 
+# Security: API Keys, Secrets, Config
+.env
+.env.*
+*.key
+*.pem
+*.secret
+*config.local.json
+*-config.json
+!example-config.json
+!*config.example.json
+
+# User Config (falls versehentlich im Repo)
+.mcp-scan.json
+mcp-scan-config.json
+
 # macOS
 .DS_Store
 .AppleDouble

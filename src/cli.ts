@@ -12,11 +12,20 @@ import mammoth from "mammoth";
 import AdmZip from "adm-zip";
 import { execSync } from "child_process";
 import chalk from "chalk";
-import { loadConfig, mergeWithCLI, ScanConfig, configExists } from './config.js';
+import { loadConfig, mergeWithCLI, ScanConfig, configExists, getConfigPath } from './config.js';
 import { getCategoryForCompany } from './categories.js';
 import { recordRename, undoLastBatch, getUndoStats } from './undo.js';
 import { runSetupWizard } from './setup.js';
 import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled } from './ai-analysis.js';
+import {
+  validateFilePath,
+  sanitizeFilename as secSanitizeFilename,
+  validateApiKey,
+  checkConfigPermissions,
+  validateEnvironment,
+  secureCleanup,
+  SECURITY_LIMITS
+} from './security.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require("pdf-parse");
@@ -79,8 +88,9 @@ function validateFilename(filename: string): { valid: boolean; errors: string[] 
 }
 
 // OCR Detection für gescannte PDFs/Bilder
-async function extractTextWithOCR(filePath: string): Promise<string> {
+async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();
+  const ocrLang = config.ocrLanguage || 'deu';
   
   try {
     if (ext === '.pdf') {
@@ -92,37 +102,101 @@ async function extractTextWithOCR(filePath: string): Promise<string> {
         return data.text;
       }
       
-      // Fallback zu OCR wenn wenig Text
-      console.log("⚠️  PDF hat wenig Text, versuche OCR...");
+      // Fallback zu OCR wenn wenig Text (gescanntes PDF)
+      if (config.enableOCR) {
+        if (VERBOSE) console.log(chalk.yellow("⚠️  PDF hat wenig Text, verwende OCR..."));
+        
+        try {
+          // Prüfe ob pdftoppm verfügbar ist
+          execSync('pdftoppm -v', { stdio: 'ignore' });
+          execSync('tesseract --version', { stdio: 'ignore' });
+          
+          const tempDir = '/tmp';
+          const timestamp = Date.now();
+          const tempPng = path.join(tempDir, `pdf-page-${timestamp}`);
+          const tempOcr = path.join(tempDir, `ocr-${timestamp}`);
+          
+          // Konvertiere erste Seite zu PNG (-singlefile = nur erste Seite, -png = PNG Format)
+          const convertCmd = `pdftoppm -singlefile -png "${filePath}" "${tempPng}"`;
+          execSync(convertCmd, { timeout: 30000 });
+          
+          const pngFile = `${tempPng}.png`;
+          
+          if (!fs.existsSync(pngFile)) {
+            if (VERBOSE) console.log(chalk.red("❌ PDF-zu-Bild Konvertierung fehlgeschlagen"));
+            return "";
+          }
+          
+          // OCR auf PNG anwenden (--psm 1 = Automatic page segmentation with OSD)
+          const ocrCmd = `tesseract "${pngFile}" "${tempOcr}" -l ${ocrLang} --psm 1 2>/dev/null`;
+          execSync(ocrCmd, { timeout: 30000 });
+          
+          const ocrText = fs.readFileSync(`${tempOcr}.txt`, 'utf8');
+          
+          // Cleanup
+          try {
+            fs.unlinkSync(pngFile);
+            fs.unlinkSync(`${tempOcr}.txt`);
+          } catch (cleanupError) {
+            // Ignore cleanup errors
+          }
+          
+          if (VERBOSE && ocrText.trim().length > 0) {
+            console.log(chalk.green(`✅ OCR erfolgreich: ${ocrText.trim().length} Zeichen extrahiert`));
+          }
+          
+          return ocrText.trim();
+        } catch (ocrError) {
+          if (VERBOSE) {
+            console.log(chalk.yellow("⚠️  OCR fehlgeschlagen. Stelle sicher dass poppler-utils installiert ist:"));
+            console.log(chalk.gray("   brew install poppler tesseract tesseract-lang"));
+          }
+        }
+      }
     }
     
-    // OCR für Bilder und gescannte PDFs
-    if (['.pdf', '.png', '.jpg', '.jpeg'].includes(ext)) {
-      try {
-        execSync('tesseract --version', { stdio: 'ignore' });
-        
-        const tempOutput = path.join('/tmp', `ocr-${Date.now()}`);
-        const cmd = `tesseract "${filePath}" "${tempOutput}" -l deu --psm 1 2>/dev/null`;
-        
-        execSync(cmd, { timeout: 30000 });
-        
-        const ocrText = fs.readFileSync(`${tempOutput}.txt`, 'utf8');
-        fs.unlinkSync(`${tempOutput}.txt`);
-        
-        return ocrText.trim();
-      } catch (ocrError) {
-        if (VERBOSE) console.log(chalk.yellow("⚠️  OCR nicht verfügbar oder fehlgeschlagen"));
+    // OCR für Bilder (direkt ohne PDF-Konvertierung)
+    if (['.png', '.jpg', '.jpeg', '.tiff', '.bmp'].includes(ext)) {
+      if (config.enableOCR) {
+        try {
+          execSync('tesseract --version', { stdio: 'ignore' });
+          
+          const tempOutput = path.join('/tmp', `ocr-${Date.now()}`);
+          const cmd = `tesseract "${filePath}" "${tempOutput}" -l ${ocrLang} --psm 1 2>/dev/null`;
+          
+          execSync(cmd, { timeout: 30000 });
+          
+          const ocrText = fs.readFileSync(`${tempOutput}.txt`, 'utf8');
+          
+          // Cleanup
+          try {
+            fs.unlinkSync(`${tempOutput}.txt`);
+          } catch (cleanupError) {
+            // Ignore cleanup errors
+          }
+          
+          if (VERBOSE && ocrText.trim().length > 0) {
+            console.log(chalk.green(`✅ OCR erfolgreich: ${ocrText.trim().length} Zeichen extrahiert`));
+          }
+          
+          return ocrText.trim();
+        } catch (ocrError) {
+          if (VERBOSE) {
+            console.log(chalk.yellow("⚠️  OCR nicht verfügbar. Installiere mit:"));
+            console.log(chalk.gray("   brew install tesseract tesseract-lang"));
+          }
+        }
       }
     }
   } catch (error) {
-    if (VERBOSE) console.error(chalk.red("Fehler bei Textextraktion:"), error);
+    if (VERBOSE) console.error(chalk.red("❌ Fehler bei Textextraktion:"), error);
   }
   
   return "";
 }
 
 // Extrahiere Text aus verschiedenen Formaten
-async function extractText(filePath: string): Promise<string> {
+async function extractText(filePath: string, config: ScanConfig): Promise<string> {
   const ext = path.extname(filePath).toLowerCase();
   
   try {
@@ -136,7 +210,7 @@ async function extractText(filePath: string): Promise<string> {
     }
     
     if (ext === '.pdf') {
-      return await extractTextWithOCR(filePath);
+      return await extractTextWithOCR(filePath, config);
     }
     
     if (ext === '.docx') {
@@ -154,7 +228,7 @@ async function extractText(filePath: string): Promise<string> {
     }
     
     if (['.png', '.jpg', '.jpeg'].includes(ext)) {
-      return await extractTextWithOCR(filePath);
+      return await extractTextWithOCR(filePath, config);
     }
   } catch (error) {
     if (VERBOSE) console.error(chalk.red(`Fehler beim Lesen:`), error);
@@ -397,11 +471,28 @@ function showDialog(message: string, buttons: string[] = ["OK", "Abbrechen"]): s
 // Einzelne Datei verarbeiten
 async function processFile(
   filePath: string,
+  config: ScanConfig,
   options: { preview: boolean; execute: boolean; silent: boolean }
 ): Promise<{ success: boolean; renamed: boolean; oldName: string; newName: string; error?: string }> {
   const { preview, execute, silent } = options;
   
-  // Validierung
+  // Security Validierung
+  const fileValidation = validateFilePath(filePath);
+  if (!fileValidation.valid) {
+    console.error(chalk.red(`❌ Security: ${fileValidation.error}`));
+    return { 
+      success: false, 
+      renamed: false, 
+      oldName: path.basename(filePath), 
+      newName: '', 
+      error: fileValidation.error 
+    };
+  }
+  
+  // Resolve to absolute path for consistency
+  filePath = path.resolve(filePath);
+  
+  // Basic file checks (redundant but kept for backward compatibility)
   if (!fs.existsSync(filePath)) {
     console.error(chalk.red(`\u274c Datei nicht gefunden: ${VERBOSE ? filePath : path.basename(filePath)}`));
     return { success: false, renamed: false, oldName: path.basename(filePath), newName: '', error: 'Datei nicht gefunden' };
@@ -418,7 +509,7 @@ async function processFile(
   console.log(chalk.blue(`\n\ud83d\udd0d Analysiere: ${path.basename(filePath)}`));
   
   // Text extrahieren
-  const text = await extractText(filePath);
+  const text = await extractText(filePath, config);
   
   if (!text || text.trim().length < 10) {
     console.log(chalk.yellow(`\u26a0\ufe0f  Konnte keinen Text extrahieren`));
@@ -502,6 +593,12 @@ async function processFile(
 async function main() {
   const args = process.argv.slice(2);
   
+  // Security: Check environment
+  const envCheck = validateEnvironment();
+  if (!envCheck.secure && VERBOSE) {
+    envCheck.warnings.forEach(w => console.log(chalk.yellow(w)));
+  }
+  
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     console.log(`
 ${chalk.bold.cyan('MCP Document Intelligence CLI v2.0')}
@@ -572,6 +669,25 @@ ${chalk.bold('Beispiele:')}
   // Opt-01: Load configuration
   CONFIG = loadConfig();
   
+  // Security: Check config file permissions
+  const configPath = getConfigPath();
+  if (fs.existsSync(configPath)) {
+    const permCheck = checkConfigPermissions(configPath);
+    if (!permCheck.secure && VERBOSE) {
+      console.log(chalk.yellow(`⚠️  ${permCheck.warning}`));
+    }
+  }
+  
+  // Security: Validate API key if AI is enabled
+  if (CONFIG.enableAI && CONFIG.perplexityApiKey) {
+    const keyValidation = validateApiKey(CONFIG.perplexityApiKey);
+    if (!keyValidation.valid) {
+      console.error(chalk.red(`❌ Security: API-Key ungültig - ${keyValidation.error}`));
+      console.log(chalk.yellow('💡 Führe --setup aus, um API-Key neu zu konfigurieren'));
+      process.exit(1);
+    }
+  }
+  
   // Check if setup is needed (first run)
   if (!configExists() && !args.includes('--setup')) {
     console.log(chalk.yellow('\\n⚠️  Keine Konfiguration gefunden. Starte Setup-Wizard...\\n'));
@@ -623,7 +739,7 @@ ${chalk.bold('Beispiele:')}
   // Verarbeite alle Dateien
   for (const filePath of filePaths) {
     try {
-      const result = await processFile(filePath, options);
+      const result = await processFile(filePath, CONFIG, options);
       results.push(result);
     } catch (error) {
       console.error(chalk.red(`Fehler bei ${path.basename(filePath)}:`), VERBOSE ? error : '');

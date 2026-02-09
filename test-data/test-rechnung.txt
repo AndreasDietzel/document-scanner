@@ -1,0 +1,25 @@
+Vodafone GmbH
+Ferdinand-Braun-Platz 1
+40549 Düsseldorf
+
+Rechnung
+
+Datum: 24.01.2024
+Rechnungsnummer: RG-2024-001234
+Kundennummer: K-98765
+
+Sehr geehrter Kunde,
+
+hiermit erhalten Sie Ihre monatliche Rechnung für Ihren Mobilfunkvertrag.
+
+Positionen:
+1. Grundgebühr           29.99 EUR
+2. Datenvolumen           5.00 EUR
+3. Auslandstelefonie     12.50 EUR
+
+Gesamt:                  47.49 EUR
+
+Vielen Dank für Ihr Vertrauen.
+
+Mit freundlichen Grüßen
+Vodafone GmbH

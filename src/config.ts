@@ -83,17 +83,17 @@ export function configExists(): boolean {
 }
 
 /**
- * Get config file path
- */
-export function getConfigPath(): string {
-  return CONFIG_PATH;
-}
-
-/**
  * Reset config to defaults
  */
 export function resetConfig(): boolean {
   return saveConfig(DEFAULT_CONFIG);
+}
+
+/**
+ * Get config file path
+ */
+export function getConfigPath(): string {
+  return CONFIG_PATH;
 }
 
 /**

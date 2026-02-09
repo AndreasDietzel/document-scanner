@@ -1,0 +1,12 @@
+{
+  "defaultMode": "preview",
+  "enableOCR": true,
+  "ocrLanguage": "deu",
+  "enableCategories": true,
+  "silent": false,
+  "customCompanies": [],
+  "enableAI": false,
+  "perplexityApiKey": "YOUR_API_KEY_HERE",
+  "perplexityModel": "sonar",
+  "aiConfidenceThreshold": 0.5
+}
