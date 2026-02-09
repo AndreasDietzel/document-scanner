@@ -18,6 +18,11 @@ export interface ScanConfig {
   enableCategories: boolean;
   silent: boolean;
   verbose: boolean;
+  // AI Enhancement
+  enableAI: boolean;
+  perplexityApiKey?: string;
+  perplexityModel?: string;
+  aiConfidenceThreshold?: number; // Minimum confidence to use AI results
 }
 
 export const DEFAULT_CONFIG: ScanConfig = {
@@ -30,7 +35,12 @@ export const DEFAULT_CONFIG: ScanConfig = {
   namingPattern: '{timestamp}_{company}_{doctype}_{reference}',
   enableCategories: false,
   silent: false,
-  verbose: false
+  verbose: false,
+  // AI defaults
+  enableAI: false,
+  perplexityApiKey: undefined,
+  perplexityModel: 'llama-3.1-sonar-small-128k-online',
+  aiConfidenceThreshold: 0.5
 };
 
 const CONFIG_PATH = path.join(os.homedir(), '.mcp-scan.json');

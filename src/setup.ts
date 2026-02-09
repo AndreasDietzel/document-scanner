@@ -24,6 +24,18 @@ export async function runSetupWizard(): Promise<void> {
     },
     {
       type: 'confirm',
+      name: 'enableAI',
+      message: '🤖 AI-Enhancement mit Perplexity aktivieren? (Empfohlen)',
+      initial: false
+    },
+    {
+      type: (prev) => prev ? 'password' : null,
+      name: 'perplexityApiKey',
+      message: 'Perplexity API-Key (von https://www.perplexity.ai/settings/api):',
+      validate: (value: string) => value.length >= 10 || 'API-Key zu kurz (min. 10 Zeichen)'
+    },
+    {
+      type: 'confirm',
       name: 'enableOCR',
       message: 'OCR für gescannte PDFs/Bilder aktivieren?',
       initial: true
@@ -70,6 +82,8 @@ export async function runSetupWizard(): Promise<void> {
   const config: ScanConfig = {
     ...DEFAULT_CONFIG,
     defaultMode: response.defaultMode,
+    enableAI: response.enableAI || false,
+    perplexityApiKey: response.perplexityApiKey || undefined,
     enableOCR: response.enableOCR,
     ocrLanguage: response.ocrLanguage || 'deu',
     enableCategories: response.enableCategories,
@@ -83,7 +97,12 @@ export async function runSetupWizard(): Promise<void> {
   if (saveConfig(config)) {
     console.log(chalk.green('\n✅ Konfiguration gespeichert!\n'));
     console.log(chalk.gray(`📁 Speicherort: ${getConfigPath()}\n`));
-    console.log(chalk.bold('Deine Einstellungen:\n'));
+    console.log(chalk.bold(`🤖 AI-Enhancement:       ${config.enableAI ? 'Ja' : 'Nein'}`));
+    if (config.enableAI && config.perplexityApiKey) {
+      const maskedKey = config.perplexityApiKey.substring(0, 8) + '...' + config.perplexityApiKey.substring(config.perplexityApiKey.length - 4);
+      console.log(chalk.cyan(`  Perplexity API-Key:   ${maskedKey}`));
+    }
+    console.log(chalk.cyan(`\n📋 Deine Einstellungen:\n`));
     console.log(chalk.cyan(`  Standard-Modus:       ${config.defaultMode}`));
     console.log(chalk.cyan(`  OCR aktiviert:        ${config.enableOCR ? 'Ja' : 'Nein'}`));
     if (config.enableOCR) {

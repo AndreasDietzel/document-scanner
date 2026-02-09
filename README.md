@@ -8,7 +8,30 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 [![macOS](https://img.shields.io/badge/macOS-Monterey%2B-blue)](https://www.apple.com/macos/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
 [![OCR](https://img.shields.io/badge/OCR-Tesseract-orange)](https://github.com/tesseract-ocr/tesseract)
-[![Version](https://img.shields.io/badge/Version-2.0.0-brightgreen)](package.json)
+[![Version](https://img.shields.io/badge/Version-2.1.0-brightgreen)](package.json)
+
+---
+
+## 🤖 Features v2.1 - AI-Enhancement
+
+### **NEU: Perplexity API Integration**
+- **🚀 Dynamische Dokumentenanalyse** statt statischer Pattern-Matching
+- **🏷️ Bis zu 5 Buzzwords** automatisch aus Dokumentinhalten extrahiert
+- **🎯 Intelligente Absender-Erkennung** auch für unbekannte Firmen
+- **📊 Confidence-Score** mit automatischem Pattern-Matching Fallback
+- **⚙️ Konfigurierbar** über Setup-Wizard oder `~/.mcp-scan.json`
+- **🔐 Privacy-First**: API-Key lokal gespeichert, maskierte Ausgabe
+
+**Beispiel AI-Output:**
+```
+🤖 AI-Analyse läuft...
+✓ Kategorie: Rechnung (95% Konfidenz)
+✓ Firma: Vodafone GmbH
+✓ Keywords: Mobilfunk, LTE, Datenvolumen, Grundgebühr
+   → 2025-05-15_Vodafone_Mobilfunkrechnung_LTE_RG-2024-987654.pdf
+```
+
+👉 **[AI-Integration Dokumentation](AI-INTEGRATION.md)** für Details zu Setup, Verwendung und Best Practices
 
 ---
 
@@ -132,6 +155,30 @@ npm link
 mcp-scan --help
 # Sollte die Hilfe anzeigen
 ```
+
+### 🤖 AI-Integration einrichten (optional)
+
+```bash
+# 1. Perplexity API-Key besorgen
+# → https://www.perplexity.ai/settings/api
+
+# 2. Setup-Wizard starten
+mcp-scan --setup
+
+# 3. Bei "AI-Enhancement aktivieren?" → Ja wählen
+# 4. API-Key eingeben (wird maskiert angezeigt)
+```
+
+**Manuelle Konfiguration:**
+```bash
+# ~/.mcp-scan.json bearbeiten
+{
+  "enableAI": true,
+  "perplexityApiKey": "pplx-your-key-here"
+}
+```
+
+👉 **Mehr Details:** [AI-INTEGRATION.md](AI-INTEGRATION.md)
 
 ### macOS Quick Action einrichten
 

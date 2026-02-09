@@ -16,6 +16,7 @@ import { loadConfig, mergeWithCLI, ScanConfig, configExists } from './config.js'
 import { getCategoryForCompany } from './categories.js';
 import { recordRename, undoLastBatch, getUndoStats } from './undo.js';
 import { runSetupWizard } from './setup.js';
+import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled } from './ai-analysis.js';
 
 const require = createRequire(import.meta.url);
 const pdfParse = require("pdf-parse");
@@ -162,28 +163,99 @@ async function extractText(filePath: string): Promise<string> {
   return "";
 }
 
-// Intelligente Namensvorschläge
-function generateSmartFilename(text: string, originalName: string, filePath: string): string {
-  const suggestions: string[] = [];
+// Intelligente Namensvorschläge (mit AI oder Fallback auf Pattern-Matching)
+async function generateSmartFilename(text: string, originalName: string, filePath: string): Promise<string> {
+  const ext = path.extname(originalName);
   
+  // Get timestamp (always first component)
+  const timestamp = extractTimestamp(originalName, filePath, text);
+  
+  // Try AI-based analysis first if enabled
+  if (CONFIG?.enableAI && CONFIG.perplexityApiKey) {
+    try {
+      const aiAnalysis = await analyzeDocumentWithAI(
+        text,
+        {
+          apiKey: CONFIG.perplexityApiKey,
+          model: CONFIG.perplexityModel,
+          temperature: 0.2
+        },
+        VERBOSE
+      );
+      
+      if (aiAnalysis && aiAnalysis.confidence >= (CONFIG.aiConfidenceThreshold || 0.5)) {
+        const aiFilename = buildFilenameFromAI(aiAnalysis, timestamp, ext);
+        
+        if (VERBOSE) {
+          console.log(chalk.magenta(`🤖 AI-Vorschlag (${(aiAnalysis.confidence * 100).toFixed(0)}% Konfidenz): ${aiFilename}`));
+          if (aiAnalysis.category && CONFIG.enableCategories) {
+            console.log(chalk.magenta(`📁 AI-Kategorie: ${aiAnalysis.category}`));
+          }
+        }
+        
+        return aiFilename;
+      } else if (aiAnalysis && VERBOSE) {
+        console.log(chalk.yellow(`⚠️  AI-Konfidenz zu niedrig (${(aiAnalysis.confidence * 100).toFixed(0)}%), nutze Pattern-Matching`));
+      }
+    } catch (error) {
+      if (VERBOSE) {
+        console.log(chalk.yellow('⚠️  AI-Analyse fehlgeschlagen, nutze Pattern-Matching'));
+      }
+    }
+  }
+  
+  // Fallback: Pattern-based analysis (old logic)
+  return generateSmartFilenamePatternBased(text, originalName, filePath, timestamp, ext);
+}
+
+// Extract timestamp from various sources
+function extractTimestamp(originalName: string, filePath: string, text: string): string {
   // 1. Scanner-Zeitstempel behalten (falls vorhanden)
   const scannerMatch = originalName.match(/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})/);
   if (scannerMatch) {
-    suggestions.push(scannerMatch[1]);
+    return scannerMatch[1].substring(0, 10); // Only date part
   }
   
-  // 1b. Wenn kein Scanner-Zeitstempel, nutze Erstelldatum als Fallback
-  if (!scannerMatch) {
-    try {
-      const stats = fs.statSync(filePath);
-      const birthtime = stats.birthtime;
-      const year = birthtime.getFullYear();
-      const month = String(birthtime.getMonth() + 1).padStart(2, '0');
-      const day = String(birthtime.getDate()).padStart(2, '0');
-      suggestions.push(`${year}-${month}-${day}`);
-    } catch (error) {
-      // Fallback fehlgeschlagen, ignorieren
-    }
+  // 2. Datum aus Briefkopf (erste 1000 Zeichen)
+  const textStart = text.substring(0, 1000);
+  const dateMatch = textStart.match(/(\d{2}\.\d{2}\.\d{4})/);
+  if (dateMatch) {
+    const [day, month, year] = dateMatch[1].split('.');
+    return `${year}-${month}-${day}`;
+  }
+  
+  // 3. ISO Format
+  const isoMatch = textStart.match(/(\d{4}-\d{2}-\d{2})/);
+  if (isoMatch) {
+    return isoMatch[1];
+  }
+  
+  // 4. Fallback: Erstelldatum
+  try {
+    const stats = fs.statSync(filePath);
+    const birthtime = stats.birthtime;
+    const year = birthtime.getFullYear();
+    const month = String(birthtime.getMonth() + 1).padStart(2, '0');
+    const day = String(birthtime.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  } catch (error) {
+    return '';
+  }
+}
+
+// Pattern-based filename generation (original logic)
+function generateSmartFilenamePatternBased(
+  text: string, 
+  originalName: string, 
+  filePath: string,
+  timestamp: string,
+  ext: string
+): string {
+  const suggestions: string[] = [];
+  
+  // 1. Timestamp
+  if (timestamp) {
+    suggestions.push(timestamp);
   }
   
   // 2. Firmen/Absender (erweiterte Liste mit Versicherungen + Custom)
@@ -295,7 +367,6 @@ function generateSmartFilename(text: string, originalName: string, filePath: str
   }
   
   // Kombiniere zu Dateiname
-  const ext = path.extname(originalName);
   const baseName = suggestions.join('_');
   return sanitizeFilename(baseName) + ext;
 }
@@ -363,7 +434,7 @@ async function processFile(
   
   // Namensvorschlag generieren
   const originalName = path.basename(filePath);
-  const suggestion = generateSmartFilename(text, originalName, filePath);
+  const suggestion = await generateSmartFilename(text, originalName, filePath);
   
   // Opt-20: Validate generated filename
   const validation = validateFilename(suggestion);
