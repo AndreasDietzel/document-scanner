@@ -61,3 +61,5 @@ temp/
 # Test
 test-results/
 coverage/
+organize-archive.sh
+ARCHIVE-ORGANIZATION.md

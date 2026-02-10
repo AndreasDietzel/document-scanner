@@ -13,7 +13,7 @@ import AdmZip from "adm-zip";
 import { execSync } from "child_process";
 import chalk from "chalk";
 import { loadConfig, mergeWithCLI, ScanConfig, configExists, getConfigPath } from './config.js';
-import { getCategoryForCompany } from './categories.js';
+import { getCategoryForCompany, CATEGORIES, CategoryInfo } from './categories.js';
 import { recordRename, undoLastBatch, getUndoStats } from './undo.js';
 import { runSetupWizard } from './setup.js';
 import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled, selectDocumentDateWithAI } from './ai-analysis.js';
@@ -314,17 +314,23 @@ function extractYearFromPath(filePath: string): string | null {
  */
 function moveToCategory(
   currentPath: string,
-  company: string | null,
+  companyOrCategoryKey: string | null,
   verbose: boolean = false
 ): string | null {
-  if (!company || !CONFIG?.enableCategories) {
+  if (!companyOrCategoryKey || !CONFIG?.enableCategories) {
     return null; // No category assignment needed
   }
   
-  const category = getCategoryForCompany(company);
+  let category = getCategoryForCompany(companyOrCategoryKey);
+  
+  // Fallback: Check direct category key
+  if (!category && CATEGORIES[companyOrCategoryKey]) {
+    category = CATEGORIES[companyOrCategoryKey];
+  }
+  
   if (!category) {
     if (verbose) {
-      console.log(chalk.gray(`   ℹ️  Keine Kategorie für ${company} gefunden`));
+      console.log(chalk.gray(`   ℹ️  Keine Kategorie für ${companyOrCategoryKey} gefunden`));
     }
     return null;
   }
@@ -337,9 +343,17 @@ function moveToCategory(
     return null;
   }
   
-  // Build target path: ~/Documents/{YEAR}/{CATEGORY}/{FILENAME}
-  const baseDir = path.join(process.env.HOME || '/Users/' + process.env.USER, 'Documents');
-  const categoryFolder = path.join(baseDir, year, category.folder);
+  // Determine year folder path dynamically (relative to current file, not hardcoded ~/)
+  const parts = currentPath.split(path.sep);
+  const yearIndex = parts.lastIndexOf(year);
+  
+  if (yearIndex === -1) {
+     return null;
+  }
+  
+  // Path up to /.../Year
+  const yearFolderPath = parts.slice(0, yearIndex + 1).join(path.sep);
+  const categoryFolder = path.join(yearFolderPath, category.folder);
   
   // Ensure category folder exists
   if (!fs.existsSync(categoryFolder)) {
@@ -1000,7 +1014,7 @@ ${chalk.bold('Beispiele:')}
   
   // Mehrere Dateien? Zeige Start-Benachrichtigung
   if (filePaths.length > 1 && !silent) {
-    showNotification("MCP Scan Batch", `Verarbeite ${filePaths.length} Dateien`, true);
+    showNotification("Doc Scan Batch", `Verarbeite ${filePaths.length} Dateien`, true);
   }
   
   // Verarbeite alle Dateien
@@ -1057,18 +1071,18 @@ ${chalk.bold('Beispiele:')}
     
     if (!silent) {
       const message = `${renamed} umbenannt, ${skipped} übersprungen, ${failed} Fehler`;
-      showNotification("MCP Scan Abgeschlossen", message, true);
+      showNotification("Doc Scan Abgeschlossen", message, true);
     }
   } else {
     // Einzeldatei-Benachrichtigungen
     const result = results[0];
     if (!silent) {
       if (result.renamed) {
-        showNotification("MCP Scan Erfolg", `Umbenannt zu:\n${result.newName}`, true);
+        showNotification("Doc Scan Erfolg", `Umbenannt zu:\n${result.newName}`, true);
       } else if (result.success && !result.error) {
-        showNotification("MCP Scan", result.oldName === result.newName ? "Name ist bereits optimal" : `Vorschlag: ${result.newName}`);
+        showNotification("Doc Scan", result.oldName === result.newName ? "Name ist bereits optimal" : `Vorschlag: ${result.newName}`);
       } else if (result.error) {
-        showNotification("MCP Scan Fehler", result.error);
+        showNotification("Doc Scan Fehler", result.error);
       }
     }
   }
