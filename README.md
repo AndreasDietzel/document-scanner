@@ -13,6 +13,41 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 
 ---
 
+## ✨ Features v2.4 - Generic Folder Structure
+
+### 📂 **NEU: Generische Ordnerstruktur**
+- **12 Standardkategorien**: Finanzen, Beruf, Gesundheit, Versicherungen, Wohnen, etc.
+- **Konsistenz über Jahre**: Gleiche Struktur für 2000-2026+
+- **Migration verfügbar**: Tool zum Umzug alter Strukturen → neue Kategorien
+- **Manuelle Organisation**: Tool benennt nur noch um, Ordner-Verwaltung liegt bei dir
+
+### 🔄 **NEU: Migrations-Script**
+- **Automatische Ordner-Umzug**: Alte Kategorien → neue generische Struktur
+- **Dry-Run Modus**: Vorschau ohne Änderungen
+- **Batch-Migration**: Mehrere Jahre auf einmal migrieren
+- **Intelligentes Mapping**: `12_Logistik` + `13_Online` → `99_Sonstiges`
+
+**Beispiel-Struktur:**
+```
+2026/
+├── 01_Finanzen/
+├── 02_Beruf_Karriere/
+├── 03_Gesundheit/
+├── 04_Versicherungen/
+├── 05_Wohnen/
+├── 06_Telekommunikation/
+├── 07_Mobilitaet/
+├── 08_Reisen/
+├── 09_Behoerden/
+├── 10_Steuern/
+├── 11_Soziales/
+└── 99_Sonstiges/
+```
+
+👉 **[Migrations-Anleitung](MIGRATION.md)** für Details zur Umstellung alter Archive
+
+---
+
 ## ✨ Features v2.3 - Personal Data Protection
 
 ### 🔒 **NEU: Geburtsdatum-Schutz**

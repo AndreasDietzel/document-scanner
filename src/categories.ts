@@ -1,6 +1,7 @@
 /**
  * Document Categorization
  * Maps companies to business categories
+ * Based on generic folder structure for years 2000-2025+
  */
 
 export interface CategoryInfo {
@@ -10,57 +11,100 @@ export interface CategoryInfo {
 }
 
 export const CATEGORIES: Record<string, CategoryInfo> = {
-  'Telekommunikation': {
-    name: 'Telekommunikation',
-    folder: '11_Telekommunikation',
-    companies: ['Vodafone', 'Telekom', 'O2', 'Telefónica', '1&1']
-  },
-  'Versicherung': {
-    name: 'Versicherung',
-    folder: '04_Versicherungen',
-    companies: [
-      'Allianz', 'AXA', 'Generali', 'HUK-Coburg', 'ERGO', 'Gothaer',
-      'R+V Versicherung', 'VHV', 'Debeka', 'Signal Iduna',
-      'Württembergische', 'LVM', 'Provinzial'
-    ]
-  },
-  'Gesundheit': {
-    name: 'Gesundheit',
-    folder: '02_Gesundheit',
-    companies: [
-      'Techniker Krankenkasse', 'TK', 'AOK', 'Barmer', 'DAK',
-      'IKK', 'KKH'
-    ]
-  },
   'Finanzen': {
     name: 'Finanzen',
     folder: '01_Finanzen',
     companies: [
       'Sparkasse', 'Volksbank', 'Postbank', 'Commerzbank',
-      'Deutsche Bank', 'PayPal', 'N26', 'ING', 'DKB'
+      'Deutsche Bank', 'PayPal', 'N26', 'ING', 'DKB', 'KfW', 
+      'KfW Bankengruppe', 'Santander', 'Targobank', 'Comdirect'
     ]
   },
-  'Logistik': {
-    name: 'Logistik',
-    folder: '12_Logistik',
+  'Beruf': {
+    name: 'Beruf & Karriere',
+    folder: '02_Beruf_Karriere',
+    companies: [] // Meist durch AI erkannt (Arbeitgeber-spezifisch)
+  },
+  'Gesundheit': {
+    name: 'Gesundheit',
+    folder: '03_Gesundheit',
     companies: [
-      'DHL', 'Deutsche Post', 'Hermes', 'UPS', 'FedEx', 'DPD', 'GLS'
+      'Techniker Krankenkasse', 'TK', 'AOK', 'Barmer', 'DAK',
+      'IKK', 'KKH', 'BKK', 'HEK', 'SBK'
     ]
   },
-  'Online': {
-    name: 'Online',
-    folder: '13_Online',
-    companies: ['Amazon', 'eBay', 'Otto', 'Zalando']
+  'Versicherung': {
+    name: 'Versicherungen',
+    folder: '04_Versicherungen',
+    companies: [
+      'Allianz', 'AXA', 'Generali', 'HUK-Coburg', 'ERGO', 'Gothaer',
+      'R+V Versicherung', 'VHV', 'Debeka', 'Signal Iduna',
+      'Württembergische', 'LVM', 'Provinzial', 'Cosmos', 'DEVK'
+    ]
+  },
+  'Wohnen': {
+    name: 'Wohnen',
+    folder: '05_Wohnen',
+    companies: [
+      'Vonovia', 'Deutsche Wohnen', 'LEG', 'GWG', 'Stadtwerke',
+      'Vattenfall', 'E.ON', 'EnBW', 'RWE', 'Gasag', 'Veolia'
+    ]
+  },
+  'Telekommunikation': {
+    name: 'Telekommunikation',
+    folder: '06_Telekommunikation',
+    companies: [
+      'Vodafone', 'Telekom', 'O2', 'Telefónica', '1&1', 'Freenet',
+      'Congstar', 'Mobilcom', 'Klarmobil', 'Unitymedia', 'Pyur'
+    ]
+  },
+  'Mobilität': {
+    name: 'Mobilität',
+    folder: '07_Mobilitaet',
+    companies: [
+      'ADAC', 'TÜV', 'DEKRA', 'ATU', 'BMW', 'Mercedes', 'VW', 'Audi',
+      'Deutsche Bahn', 'BVG', 'MVG', 'VRS', 'VRR', 'Car2Go', 'Miles'
+    ]
   },
   'Reisen': {
     name: 'Reisen',
-    folder: '06_Reisen',
-    companies: ['Lufthansa', 'Deutsche Bahn', 'Booking.com', 'Airbnb']
+    folder: '08_Reisen',
+    companies: [
+      'Lufthansa', 'Ryanair', 'Eurowings', 'Booking.com', 'Airbnb',
+      'Hotels.com', 'Expedia', 'TUI', 'DER Touristik'
+    ]
   },
-  'Auto': {
-    name: 'Auto',
-    folder: '09_Auto',
-    companies: ['ADAC', 'TÜV', 'DEKRA']
+  'Behörden': {
+    name: 'Behörden',
+    folder: '09_Behoerden',
+    companies: [
+      'Finanzamt', 'Bürgeramt', 'Standesamt', 'Kraftfahrzeugzulassung',
+      'Bundeszentralamt', 'Landesamt', 'Stadtverwaltung', 'Gemeinde'
+    ]
+  },
+  'Steuern': {
+    name: 'Steuern',
+    folder: '10_Steuern',
+    companies: [
+      'Finanzamt', 'Steuerberater', 'Lohnsteuerhilfeverein',
+      'ELSTER', 'Bundeszentralamt für Steuern'
+    ]
+  },
+  'Soziales': {
+    name: 'Soziales & Familie',
+    folder: '11_Soziales',
+    companies: [
+      'Kindergarten', 'Schule', 'Jugendamt', 'Familienkasse',
+      'Elterngeldstelle', 'Caritas', 'Diakonie', 'DRK', 'AWO'
+    ]
+  },
+  'Sonstiges': {
+    name: 'Sonstiges',
+    folder: '99_Sonstiges',
+    companies: [
+      'Amazon', 'eBay', 'Otto', 'Zalando', 'DHL', 'Deutsche Post',
+      'Hermes', 'UPS', 'FedEx', 'DPD', 'GLS'
+    ]
   }
 };
 
