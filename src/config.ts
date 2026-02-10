@@ -35,7 +35,7 @@ export const DEFAULT_CONFIG: ScanConfig = {
   customDocTypes: {},
   timestampPriority: ['scanner', 'ocr', 'creation'],
   namingPattern: '{timestamp}_{company}_{doctype}_{reference}',
-  enableCategories: false,
+  enableCategories: true, // Auto-categorization enabled by default (v2.4)
   silent: false,
   verbose: false,
   // AI defaults

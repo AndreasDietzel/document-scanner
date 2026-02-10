@@ -13,21 +13,15 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 
 ---
 
-## ✨ Features v2.4 - Generic Folder Structure
+## ✨ Features v2.4 - Smart Categorization
 
-### 📂 **NEU: Generische Ordnerstruktur**
+### 📂 **NEU: Automatische Kategorisierung**
 - **12 Standardkategorien**: Finanzen, Beruf, Gesundheit, Versicherungen, Wohnen, etc.
-- **Konsistenz über Jahre**: Gleiche Struktur für 2000-2026+
-- **Migration verfügbar**: Tool zum Umzug alter Strukturen → neue Kategorien
-- **Manuelle Organisation**: Tool benennt nur noch um, Ordner-Verwaltung liegt bei dir
+- **AI-gestützte Zuordnung**: Perplexity erkennt Firma → passende Kategorie
+- **Jahr-spezifisch**: Dateien bleiben im Jahr-Ordner (z.B. 2026/01_Finanzen/)
+- **Intelligente Fallbacks**: OCR → AI → Pattern-Matching
 
-### 🔄 **NEU: Migrations-Script**
-- **Automatische Ordner-Umzug**: Alte Kategorien → neue generische Struktur
-- **Dry-Run Modus**: Vorschau ohne Änderungen
-- **Batch-Migration**: Mehrere Jahre auf einmal migrieren
-- **Intelligentes Mapping**: `12_Logistik` + `13_Online` → `99_Sonstiges`
-
-**Beispiel-Struktur:**
+**Ordnerstruktur (2000-2026+):**
 ```
 2026/
 ├── 01_Finanzen/
@@ -44,7 +38,11 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 └── 99_Sonstiges/
 ```
 
-👉 **[Migrations-Anleitung](MIGRATION.md)** für Details zur Umstellung alter Archive
+**Workflow:**
+1. Dokument wird erkannt (Firma, Typ, Datum)
+2. AI ordnet Kategorie zu (z.B. Vodafone → Telekommunikation)
+3. Datei wird umbenannt UND in passenden Unterordner verschoben
+4. Jahr bleibt konstant (Datei wandert nicht zwischen Jahren)
 
 ---
 

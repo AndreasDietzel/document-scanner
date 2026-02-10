@@ -12,8 +12,7 @@
     "watch": "tsc --watch",
     "start": "node build/cli.js",
     "test": "node build/cli.js test-data/*.txt --preview",
-    "prepare": "npm run build",
-    "migrate": "node build/migrate-folders.js"
+    "prepare": "npm run build"
   },
   "keywords": [
     "ocr",

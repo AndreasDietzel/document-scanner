@@ -34,6 +34,9 @@ const pdfParse = require("pdf-parse");
 let VERBOSE = false;
 let CONFIG: ScanConfig;
 
+// Track detected company for category assignment
+let DETECTED_COMPANY: string | null = null;
+
 // Import shared utilities from main index
 function normalizeUnicode(str: string): string {
   return str.normalize('NFC');
@@ -296,6 +299,79 @@ async function extractText(filePath: string, config: ScanConfig): Promise<string
   return "";
 }
 
+/**
+ * Extract year from file path (e.g., /Documents/2026/file.pdf → 2026)
+ * Files stay in their year folder, no cross-year movement
+ */
+function extractYearFromPath(filePath: string): string | null {
+  const yearMatch = filePath.match(/\/(\d{4})\//);
+  return yearMatch ? yearMatch[1] : null;
+}
+
+/**
+ * Move file to appropriate category folder within same year
+ * Example: /Documents/2026/file.pdf → /Documents/2026/01_Finanzen/file.pdf
+ */
+function moveToCategory(
+  currentPath: string,
+  company: string | null,
+  verbose: boolean = false
+): string | null {
+  if (!company || !CONFIG?.enableCategories) {
+    return null; // No category assignment needed
+  }
+  
+  const category = getCategoryForCompany(company);
+  if (!category) {
+    if (verbose) {
+      console.log(chalk.gray(`   ℹ️  Keine Kategorie für ${company} gefunden`));
+    }
+    return null;
+  }
+  
+  const year = extractYearFromPath(currentPath);
+  if (!year) {
+    if (verbose) {
+      console.log(chalk.gray(`   ℹ️  Kein Jahr im Pfad erkannt: ${currentPath}`));
+    }
+    return null;
+  }
+  
+  // Build target path: ~/Documents/{YEAR}/{CATEGORY}/{FILENAME}
+  const baseDir = path.join(process.env.HOME || '/Users/' + process.env.USER, 'Documents');
+  const categoryFolder = path.join(baseDir, year, category.folder);
+  
+  // Ensure category folder exists
+  if (!fs.existsSync(categoryFolder)) {
+    if (verbose) {
+      console.log(chalk.gray(`   📁 Erstelle Ordner: ${category.folder}`));
+    }
+    fs.mkdirSync(categoryFolder, { recursive: true });
+  }
+  
+  const fileName = path.basename(currentPath);
+  const targetPath = path.join(categoryFolder, fileName);
+  
+  // Check if target already exists
+  if (fs.existsSync(targetPath)) {
+    if (verbose) {
+      console.log(chalk.yellow(`   ⚠️  Datei existiert bereits in Kategorie: ${category.folder}/${fileName}`));
+    }
+    return null;
+  }
+  
+  try {
+    fs.renameSync(currentPath, targetPath);
+    console.log(chalk.magenta(`   📁 Verschoben nach: ${category.name} (${category.folder}/)`));
+    return targetPath;
+  } catch (error) {
+    if (verbose) {
+      console.log(chalk.yellow(`   ⚠️  Verschiebung fehlgeschlagen: ${error}`));
+    }
+    return null;
+  }
+}
+
 // Intelligente Namensvorschläge (mit AI oder Fallback auf Pattern-Matching)
 async function generateSmartFilename(text: string, originalName: string, filePath: string): Promise<string> {
   const ext = path.extname(originalName);
@@ -318,6 +394,9 @@ async function generateSmartFilename(text: string, originalName: string, filePat
       
       if (aiAnalysis && aiAnalysis.confidence >= (CONFIG.aiConfidenceThreshold || 0.5)) {
         const aiFilename = buildFilenameFromAI(aiAnalysis, timestamp, ext);
+        
+        // Store detected company for category assignment
+        DETECTED_COMPANY = aiAnalysis.company || null;
         
         if (VERBOSE) {
           console.log(chalk.magenta(`🤖 AI-Vorschlag (${(aiAnalysis.confidence * 100).toFixed(0)}% Konfidenz): ${aiFilename}`));
@@ -459,6 +538,7 @@ function generateSmartFilenamePatternBased(
   for (const company of companies) {
     if (text.includes(company)) {
       detectedCompany = company;
+      DETECTED_COMPANY = company; // Store globally for category assignment
       suggestions.push(company.replace(/\s+/g, '_'));
       break;
     }
@@ -592,6 +672,9 @@ async function processFile(
   options: { preview: boolean; execute: boolean; silent: boolean }
 ): Promise<{ success: boolean; renamed: boolean; oldName: string; newName: string; error?: string }> {
   const { preview, execute, silent } = options;
+  
+  // Reset detected company for each file
+  DETECTED_COMPANY = null;
   
   // Security Validierung
   const fileValidation = validateFilePath(filePath);
@@ -745,12 +828,24 @@ async function processFile(
       fs.renameSync(filePath, newPath);      
       // Opt-17: Record rename for undo functionality
       recordRename(filePath, newPath);
-            console.log(chalk.green(`\n\u2705 Erfolgreich umbenannt!`));
+      
+      console.log(chalk.green(`\n✅ Erfolgreich umbenannt!`));
       if (VERBOSE) {
         console.log(chalk.gray(`   Von: ${filePath}`));
         console.log(chalk.gray(`   Nach: ${newPath}`));
       }
-      return { success: true, renamed: true, oldName: originalName, newName: suggestion };
+      
+      // Move to category folder if categorization is enabled
+      let finalPath = newPath;
+      if (CONFIG?.enableCategories && DETECTED_COMPANY) {
+        const categoryPath = moveToCategory(newPath, DETECTED_COMPANY, VERBOSE);
+        if (categoryPath) {
+          recordRename(newPath, categoryPath); // Track category move for undo
+          finalPath = categoryPath;
+        }
+      }
+      
+      return { success: true, renamed: true, oldName: originalName, newName: path.basename(finalPath) };
     } catch (error) {
       console.error(chalk.red(`\u274c Umbenennung fehlgeschlagen:`), VERBOSE ? error : '');
       return { success: false, renamed: false, oldName: originalName, newName: suggestion, error: 'Umbenennung fehlgeschlagen' };

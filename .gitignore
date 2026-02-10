@@ -34,6 +34,9 @@ doc-scan-config.json
 .mcp-scan-undo.json
 mcp-scan-config.json
 
+# Local Setup Scripts (nur für lokale Nutzung)
+setup-folders.sh
+
 # macOS
 .DS_Store
 .AppleDouble
