@@ -3,7 +3,7 @@
 **Basierend auf ISO 25010 Quality Model**
 
 Ausgearbeitet am: 9. Februar 2026
-Projekt: mcp-document-scanner v1.0 → v2.0
+Projekt: document-scanner v1.0 → v2.0
 
 ---
 

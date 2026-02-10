@@ -226,7 +226,7 @@ anbei die Unterlagen zu Ihrer Versicherungspolice...
 
 ## Support
 
-- **GitHub Issues**: [github.com/AndreasDietzel/mcp-document-scanner/issues](https://github.com/AndreasDietzel/mcp-document-scanner/issues)
+- **GitHub Issues**: [github.com/AndreasDietzel/document-scanner/issues](https://github.com/AndreasDietzel/document-scanner/issues)
 - **Perplexity API Docs**: [docs.perplexity.ai](https://docs.perplexity.ai)
 
 ---

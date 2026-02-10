@@ -11,7 +11,7 @@
 
 ## 📋 Voraussetzungen
 
-- ✅ mcp-document-scanner v2.0 installiert und gebaut
+- ✅ document-scanner v2.0 installiert und gebaut
 - ✅ `npm link` ausgeführt (macht `doc-scan` global verfügbar)
 - ✅ Setup-Wizard durchlaufen (`doc-scan --setup`)
 
@@ -252,7 +252,7 @@ which doc-scan
 # Sollte zeigen: /usr/local/bin/doc-scan oder /opt/homebrew/bin/doc-scan
 
 # Falls nicht, npm link neu ausführen:
-cd ~/Projects/mcp-document-scanner
+cd ~/Projects/document-scanner
 npm link
 ```
 

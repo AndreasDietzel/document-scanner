@@ -51,7 +51,7 @@ Wenn ein Dokument dieses Datum enthält, wird es übersprungen und das nächste 
 - **Neu**: `~/.doc-scan.json`, `~/.doc-scan-undo.json`
 
 #### 3. Package Name
-- **Alt**: `mcp-document-scanner`
+- **Alt**: `document-scanner`
 - **Neu**: `document-scanner`
 
 #### 4. Dokumentation
@@ -71,7 +71,7 @@ cp ~/.mcp-scan.json ~/.doc-scan.json
 cp ~/.mcp-scan-undo.json ~/.doc-scan-undo.json
 
 # 2. Projekt aktualisieren
-cd ~/Projects/mcp-document-scanner
+cd ~/Projects/document-scanner
 git pull origin main
 npm install
 npm run build
@@ -122,7 +122,7 @@ Falls du die macOS Quick Action nutzt:
 
 - **Befehlsname geändert**: `mcp-scan` → `doc-scan`
 - **Config-Pfade geändert**: `~/.mcp-scan.json` → `~/.doc-scan.json`
-- **Package-Name geändert**: `mcp-document-scanner` → `document-scanner`
+- **Package-Name geändert**: `document-scanner` → `document-scanner`
 
 ### 🐛 Bugfixes
 
@@ -177,15 +177,14 @@ mcp-scan --help  # Fehler: command not found
 
 ## 🔧 Known Issues
 
-- **GitHub Repository Name**: Bleibt vorerst `mcp-document-scanner` (Umbenennung auf GitHub in separatem Schritt)
-- **Alte Config-Migration**: Muss manuell durchgeführt werden (siehe Migration-Guide oben)
+*Keine bekannten Probleme.*
 
 ---
 
-## 🎯 Next Steps
+## 🎯 Completed
 
-- [ ] GitHub Repository umbenennen: `mcp-document-scanner` → `document-scanner`
-- [ ] GitHub Release v2.3.0 erstellen
+- [x] GitHub Repository umbenennen: `mcp-document-scanner` → `document-scanner`
+- [x] GitHub Release v2.3.0 erstellen
 - [ ] npm Package veröffentlichen (falls gewünscht)
 
 ---

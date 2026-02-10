@@ -133,7 +133,7 @@ processFile(filePath, config, options)
 
 ### Für bestehende Installationen:
 ```bash
-cd ~/Projects/mcp-document-scanner
+cd ~/Projects/document-scanner
 git pull origin main
 npm install
 npm run build
@@ -141,8 +141,8 @@ npm run build
 
 ### Für Neuinstallationen:
 ```bash
-git clone https://github.com/AndreasDietzel/mcp-document-scanner.git
-cd mcp-document-scanner
+git clone https://github.com/AndreasDietzel/document-scanner.git
+cd document-scanner
 npm install
 npm run build
 npm link
@@ -212,8 +212,8 @@ Minor:
 
 ## 🔗 Links
 
-- **GitHub**: https://github.com/AndreasDietzel/mcp-document-scanner
-- **Issues**: https://github.com/AndreasDietzel/mcp-document-scanner/issues
+- **GitHub**: https://github.com/AndreasDietzel/document-scanner
+- **Issues**: https://github.com/AndreasDietzel/document-scanner/issues
 - **Perplexity API**: https://docs.perplexity.ai
 
 ---

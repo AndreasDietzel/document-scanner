@@ -81,7 +81,7 @@ execSync(convertCmd, { timeout: 30000, cwd: '/tmp', encoding: 'utf8' });
 
 ### Upgrade
 ```bash
-cd /Users/andreasdietzel/Projects/mcp-document-scanner
+cd /Users/andreasdietzel/Projects/document-scanner
 git pull origin main
 npm run build
 ```
@@ -171,8 +171,8 @@ Alle APIs und Konfigurationen bleiben kompatibel zu v2.2.0.
 ## 📥 Download
 
 ```bash
-git clone https://github.com/AndreasDietzel/mcp-document-scanner
-cd mcp-document-scanner
+git clone https://github.com/AndreasDietzel/document-scanner
+cd document-scanner
 git checkout v2.2.2
 npm install
 npm run build
@@ -181,8 +181,8 @@ npm link
 
 ## 🔗 Links
 
-- **GitHub Release:** https://github.com/AndreasDietzel/mcp-document-scanner/releases/tag/v2.2.2
-- **Issue Tracker:** https://github.com/AndreasDietzel/mcp-document-scanner/issues
+- **GitHub Release:** https://github.com/AndreasDietzel/document-scanner/releases/tag/v2.2.2
+- **Issue Tracker:** https://github.com/AndreasDietzel/document-scanner/issues
 - **Previous Release:** [v2.2.1 (Quick Action Fix)](RELEASE-v2.2.0.md)
 
 ## 📞 Support

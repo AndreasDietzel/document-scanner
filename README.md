@@ -175,8 +175,8 @@ brew install tesseract tesseract-lang
 
 ```bash
 # Repository klonen
-git clone https://github.com/AndreasDietzel/mcp-document-scanner.git
-cd mcp-document-scanner
+git clone https://github.com/AndreasDietzel/document-scanner.git
+cd document-scanner
 
 # Dependencies installieren
 npm install
@@ -480,7 +480,7 @@ doc-scan datei.pdf --silent  # Zeigt Console-Output
 ### Projekt-Struktur
 
 ```
-mcp-document-scanner/
+document-scanner/
 ├── src/
 │   ├── cli.ts              # Haupt-CLI Tool
 │   ├── config.ts           # Konfigurationsmanagement
