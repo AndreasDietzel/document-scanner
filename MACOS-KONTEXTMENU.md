@@ -1,6 +1,6 @@
 # 🍎 macOS Kontextmenü-Integration (Quick Action)
 
-**Ziel:** MCP Document Scanner direkt aus dem Finder-Kontextmenü aufrufen
+**Ziel:** Document Scanner direkt aus dem Finder-Kontextmenü aufrufen
 
 **✨ NEU in v2.2:** 
 - ✅ **Funktioniert überall** - Downloads, Desktop, Dokumente, externe Laufwerke, etc.
@@ -69,7 +69,7 @@ do
 done
 
 # Erfolgs-Benachrichtigung
-osascript -e 'display notification "Analyse abgeschlossen" with title "MCP Scanner" sound name "Glass"'
+osascript -e 'display notification "Analyse abgeschlossen" with title "Document Scanner" sound name "Glass"'
 ```
 
 #### Variante B: Execute-Modus (benennt automatisch um)
@@ -104,7 +104,7 @@ do
 done
 
 # Zusammenfassung
-osascript -e "display notification \"$renamed umbenannt, $skipped übersprungen\" with title \"MCP Scanner\" sound name \"Glass\""
+osascript -e "display notification \"$renamed umbenannt, $skipped übersprungen\" with title \"Document Scanner\" sound name \"Glass\""
 ```
 
 #### Variante C: Mit Bestätigung (Dialog)
@@ -335,7 +335,7 @@ cd ~/Downloads
 for file in *.pdf; do
   [[ -f "$file" ]] && doc-scan "$file" --execute --silent
 done
-osascript -e 'display notification "Downloads aufgeräumt" with title "MCP Scanner"'
+osascript -e 'display notification "Downloads aufgeräumt" with title "Document Scanner"'
 ```
 
 **Als Quick Action:** Script oben in Automator einfügen, aber ohne `for file in "$@"` Loop

@@ -277,7 +277,7 @@ Siehe [MACOS-KONTEXTMENU.md](MACOS-KONTEXTMENU.md) für detaillierte Anleitung.
 **Kurzfassung:**
 1. Automator öffnen → Schnellaktion erstellen
 2. Shell-Script hinzufügen mit `doc-scan` Aufruf
-3. Speichern als "Mit MCP scannen und umbenennen"
+3. Speichern als "Dokument scannen und umbenennen"
 4. **Rechtsklick im Finder** → Quick Action verwenden
 
 ---
@@ -309,7 +309,7 @@ doc-scan document.pdf --execute --silent
 ### Finder Kontextmenü
 
 1. Datei(en) im Finder auswählen
-2. Rechtsklick → **Schnellaktionen** → **"Mit MCP scannen und umbenennen"**
+2. Rechtsklick → **Schnellaktionen** → **"Dokument scannen und umbenennen"**
 3. Dialog erscheint mit Vorschlag
 4. "Umbenennen" klicken
 
@@ -317,7 +317,7 @@ doc-scan document.pdf --execute --silent
 
 Optional: **⌘⌥S** zuweisen
 - Systemeinstellungen → Tastatur → Kurzbefehle → Dienste
-- "Mit MCP scannen und umbenennen" → Shortcut hinzufügen
+- "Dokument scannen und umbenennen" → Shortcut hinzufügen
 
 ---
 
@@ -387,12 +387,12 @@ doc-scan ~/Downloads/*.pdf --execute
 
 Bearbeite das Automator Shell-Script:
 ```bash
-"$NODE_PATH" "$MCP_SCAN" "$file" --execute
+"$NODE_PATH" "$DOC_SCAN" "$file" --execute
 ```
 
 **Keine Benachrichtigungen:**
 ```bash
-"$NODE_PATH" "$MCP_SCAN" "$file" --execute --silent
+"$NODE_PATH" "$DOC_SCAN" "$file" --execute --silent
 ```
 
 ### Eigene Firmen/Muster hinzufügen
@@ -437,7 +437,7 @@ npm link
 
 **Lösung 1:** Systemeinstellungen prüfen
 - Systemeinstellungen → Erweiterungen → Finder
-- "Mit MCP scannen und umbenennen" aktivieren
+- "Dokument scannen und umbenennen" aktivieren
 
 **Lösung 2:** Service neu erstellen
 - Automator öffnen
@@ -575,7 +575,6 @@ MIT License - siehe [LICENSE](LICENSE)
 - [Tesseract OCR](https://github.com/tesseract-ocr/tesseract) - OCR Engine
 - [pdf-parse](https://www.npmjs.com/package/pdf-parse) - PDF Text Extraction
 - [mammoth](https://www.npmjs.com/package/mammoth) - DOCX Parsing
-- [MCP](https://github.com/modelcontextprotocol) - Model Context Protocol
 
 ---
 

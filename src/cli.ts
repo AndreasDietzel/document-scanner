@@ -16,7 +16,7 @@ import { loadConfig, mergeWithCLI, ScanConfig, configExists, getConfigPath } fro
 import { getCategoryForCompany } from './categories.js';
 import { recordRename, undoLastBatch, getUndoStats } from './undo.js';
 import { runSetupWizard } from './setup.js';
-import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled } from './ai-analysis.js';
+import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled, selectDocumentDateWithAI } from './ai-analysis.js';
 import {
   validateFilePath,
   sanitizeFilename as secSanitizeFilename,
@@ -301,7 +301,7 @@ async function generateSmartFilename(text: string, originalName: string, filePat
   const ext = path.extname(originalName);
   
   // Get timestamp (always first component)
-  const timestamp = extractTimestamp(originalName, filePath, text);
+  const timestamp = await extractTimestamp(originalName, filePath, text);
   
   // Try AI-based analysis first if enabled
   if (CONFIG?.enableAI && CONFIG.perplexityApiKey) {
@@ -342,16 +342,17 @@ async function generateSmartFilename(text: string, originalName: string, filePat
 }
 
 // Extract timestamp from various sources
-function extractTimestamp(originalName: string, filePath: string, text: string): string {
+async function extractTimestamp(originalName: string, filePath: string, text: string): Promise<string> {
   // 1. Scanner-Zeitstempel behalten (falls vorhanden)
   const scannerMatch = originalName.match(/(\d{4}-\d{2}-\d{2}_\d{2}-\d{2}-\d{2})/);
   if (scannerMatch) {
     return scannerMatch[1].substring(0, 10); // Only date part
   }
   
-  // 2. Datum aus Briefkopf (erste 1000 Zeichen) - aber überspringe Geburtsdatum
+  // 2. Datum aus Briefkopf (erste 1000 Zeichen) - sammle alle Daten (außer Geburtsdatum)
   const textStart = text.substring(0, 1000);
   const dateMatches = textStart.matchAll(/(\d{2}\.\d{2}\.\d{4})/g);
+  const foundDates: string[] = [];
   
   for (const match of dateMatches) {
     const foundDate = match[1];
@@ -364,8 +365,34 @@ function extractTimestamp(originalName: string, filePath: string, text: string):
       continue; // Try next date match
     }
     
-    // Use this date
-    const [day, month, year] = foundDate.split('.');
+    foundDates.push(foundDate);
+  }
+  
+  // If multiple dates found and AI enabled, ask AI to choose the best one
+  if (foundDates.length > 1 && CONFIG?.enableAI && CONFIG?.perplexityApiKey) {
+    try {
+      const aiSelectedDate = await selectDocumentDateWithAI(
+        text,
+        foundDates,
+        {
+          apiKey: CONFIG.perplexityApiKey,
+          model: CONFIG.perplexityModel
+        },
+        VERBOSE
+      );
+      
+      if (aiSelectedDate) {
+        const [day, month, year] = aiSelectedDate.split('.');
+        return `${year}-${month}-${day}`;
+      }
+    } catch (error) {
+      // Continue with first date as fallback
+    }
+  }
+  
+  // Use first found date (if any)
+  if (foundDates.length > 0) {
+    const [day, month, year] = foundDates[0].split('.');
     return `${year}-${month}-${day}`;
   }
   
@@ -416,7 +443,7 @@ function generateSmartFilenamePatternBased(
     'Amazon', 'DHL', 'Deutsche Post', 'Hermes', 'UPS', 'FedEx',
     // Banken
     'Sparkasse', 'Volksbank', 'Postbank', 'Commerzbank', 'Deutsche Bank',
-    'PayPal', 'N26', 'ING', 'DKB',
+    'PayPal', 'N26', 'ING', 'DKB', 'KfW', 'KfW Bankengruppe',
     // Sonstiges
     'Lufthansa', 'Deutsche Bahn', 'ADAC', 'eBay', 'Otto',
     // Custom companies from config
@@ -440,8 +467,12 @@ function generateSmartFilenamePatternBased(
     }
   }
   
-  // 3. Dokumenttyp
+  // 3. Dokumenttyp (spezifischere Typen zuerst!)
   const docTypes: { [key: string]: string } = {
+    'Rahmenkreditvertrag': 'Rahmenkreditvertrag',
+    'Kreditvertrag': 'Kreditvertrag',
+    'Kontoauszug': 'Kontoauszug',
+    'Lieferschein': 'Lieferschein',
     'Rechnung': 'Rechnung',
     'Invoice': 'Rechnung',
     'Vertrag': 'Vertrag',
@@ -450,9 +481,7 @@ function generateSmartFilenamePatternBased(
     'Mahnung': 'Mahnung',
     'Kündigung': 'Kuendigung',
     'Bestellung': 'Bestellung',
-    'Lieferschein': 'Lieferschein',
     'Angebot': 'Angebot',
-    'Kontoauszug': 'Kontoauszug',
     'Rezept': 'Rezept'
   };
   

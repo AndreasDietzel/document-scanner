@@ -22,7 +22,7 @@ export interface PerplexityConfig {
   temperature?: number;
 }
 
-const DEFAULT_MODEL = 'llama-3.1-sonar-small-128k-online';
+const DEFAULT_MODEL = 'sonar';
 const API_BASE_URL = 'https://api.perplexity.ai';
 
 /**
@@ -264,4 +264,106 @@ export function buildFilenameFromAI(
  */
 export function isAIEnabled(config: PerplexityConfig | undefined): boolean {
   return !!(config?.apiKey && config.apiKey.length >= 10);
+}
+
+/**
+ * Select best document date from multiple candidates using AI
+ */
+export async function selectDocumentDateWithAI(
+  text: string,
+  dates: string[],
+  config: PerplexityConfig,
+  verbose: boolean = false
+): Promise<string | null> {
+  
+  if (!config.apiKey || config.apiKey.length < 10) {
+    return null;
+  }
+
+  if (dates.length === 0) {
+    return null;
+  }
+
+  if (dates.length === 1) {
+    return dates[0];
+  }
+
+  try {
+    const truncatedText = text.substring(0, 1500);
+    const datesList = dates.join(', ');
+    
+    const prompt = `Analysiere dieses Dokument und identifiziere das BRIEFKOPF-DATUM (Datum des Schreibens/der Rechnung).
+
+DOKUMENT:
+${truncatedText}
+
+GEFUNDENE DATEN:
+${datesList}
+
+AUFGABE:
+Wähle aus den gefundenen Daten das wahrscheinlichste Briefkopf-Datum (= Datum des Dokuments, nicht z.B. Vertragslaufzeit oder andere Termine).
+
+ANTWORT-FORMAT (NUR das Datum im Format DD.MM.YYYY, keine zusätzlichen Texte):
+DD.MM.YYYY`;
+
+    if (verbose) {
+      console.log(chalk.gray(`🤖 KI prüft ${dates.length} gefundene Daten...`));
+    }
+
+    const response = await fetch(`${API_BASE_URL}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${config.apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: config.model || DEFAULT_MODEL,
+        messages: [
+          {
+            role: 'system',
+            content: 'Du bist ein Experte für Dokumentenanalyse. Antworte nur mit dem Datum im Format DD.MM.YYYY.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: 50,
+        temperature: 0.1,
+        top_p: 0.9,
+        stream: false
+      })
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content?.trim();
+
+    if (!content) {
+      return null;
+    }
+
+    // Extract date from response
+    const dateMatch = content.match(/(\d{2}\.\d{2}\.\d{4})/);
+    if (dateMatch) {
+      const selectedDate = dateMatch[1];
+      if (dates.includes(selectedDate)) {
+        if (verbose) {
+          console.log(chalk.green(`✅ KI wählte Briefkopf-Datum: ${selectedDate}`));
+        }
+        return selectedDate;
+      }
+    }
+
+    return null;
+
+  } catch (error) {
+    if (verbose) {
+      console.log(chalk.yellow('⚠️  KI-Datumsauswahl fehlgeschlagen, nutze erstes Datum'));
+    }
+    return null;
+  }
 }
