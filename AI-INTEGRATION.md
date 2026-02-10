@@ -2,16 +2,19 @@
 
 ## Überblick
 
-Version 2.1.0 erweitert den MCP Document Scanner um dynamische KI-basierte Dokumentenanalyse. Statt statischer Pattern-Matching-Regeln nutzt das Tool die Perplexity API, um Dokumente intelligent zu analysieren und bis zu **5 relevante Buzzwords** automatisch zu extrahieren.
+Version 2.1.0 erweitert den Document Scanner um dynamische KI-basierte Dokumentenanalyse. Statt statischer Pattern-Matching-Regeln nutzt das Tool die Perplexity API, um Dokumente intelligent zu analysieren und bis zu **5 relevante Buzzwords** automatisch zu extrahieren.
+
+**⭐ Empfohlen:** Mit AI-Integration erkennt das Tool **ALLE Firmen weltweit**, nicht nur die ~40 in der Fallback-Liste. Perfekt für internationale Dokumente oder unbekannte Absender!
 
 ## Features
 
 ### Intelligente Extraktion
-- **Kategorie**: Automatische Erkennung (Rechnung, Vertrag, Mahnung, etc.)
-- **Firmenname**: Präzise Identifizierung des Absenders
-- **Dokumenttyp**: Art des Dokuments (Rechnung, Kündigung, Angebot, etc.)
+- **Kategorie**: Automatische Erkennung (Telekommunikation, Versicherung, Finanzen, etc.)
+- **Firmenname**: Präzise Identifizierung **jedes Absenders** (nicht begrenzt auf vordefinierte Liste!)
+- **Dokumenttyp**: Art des Dokuments (Rechnung, Kündigung, Angebot, Vertrag, etc.)
 - **Keywords**: Bis zu 5 relevante Schlagworte aus dem Inhalt
 - **Referenznummer**: Rechnungs-, Kunden- oder Vorgangsnummern
+- **Datumsauswahl**: KI wählt korrektes Briefkopf-Datum bei mehreren Kandidaten
 
 ### Fallback-Mechanismus
 - **Confidence-Threshold**: Mindestvertrauen von 50% (konfigurierbar)

@@ -337,7 +337,11 @@ async function generateSmartFilename(text: string, originalName: string, filePat
     }
   }
   
-  // Fallback: Pattern-based analysis (old logic)
+  // Fallback: Pattern-based analysis (only used when AI is disabled/unavailable/low-confidence)
+  // Note: AI can recognize ANY company, not just those in the predefined list
+  if (VERBOSE && !CONFIG?.enableAI) {
+    console.log(chalk.yellow('💡 Tipp: Aktiviere AI (--setup) für bessere Firmenerkennung'));
+  }
   return generateSmartFilenamePatternBased(text, originalName, filePath, timestamp, ext);
 }
 
@@ -430,7 +434,8 @@ function generateSmartFilenamePatternBased(
     suggestions.push(timestamp);
   }
   
-  // 2. Firmen/Absender (erweiterte Liste mit Versicherungen + Custom)
+  // 2. Firmen/Absender (nur Fallback - AI erkennt ALLE Firmen, nicht nur diese Liste!)
+  // Diese Liste wird nur verwendet wenn AI nicht verfügbar ist oder niedrige Konfidenz hat
   const companies = [
     // Telekommunikation
     'Vodafone', 'Telekom', 'O2', 'Telefónica',

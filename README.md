@@ -45,8 +45,9 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 ### **NEU: Perplexity API Integration**
 - **🚀 Dynamische Dokumentenanalyse** statt statischer Pattern-Matching
 - **🏷️ Bis zu 5 Buzzwords** automatisch aus Dokumentinhalten extrahiert
-- **🎯 Intelligente Absender-Erkennung** auch für unbekannte Firmen
+- **🎯 Intelligente Absender-Erkennung** für **ALLE Firmen** (nicht nur vordefinierte Liste!)
 - **📊 Confidence-Score** mit automatischem Pattern-Matching Fallback
+- **📅 AI-gestützte Datumsauswahl** - wählt korrektes Briefkopf-Datum aus mehreren Kandidaten
 - **⚙️ Konfigurierbar** über Setup-Wizard oder `~/.doc-scan.json`
 - **🔐 Privacy-First**: API-Key lokal gespeichert, maskierte Ausgabe
 
@@ -107,13 +108,10 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
   - Briefdatum aus OCR extrahieren (DD.MM.YYYY → YYYY-MM-DD)
   - **Fallback auf Erstelldatum** wenn kein Datum gefunden
 
-- **🏢 Absender-Erkennung** (40+ Firmen)
-  - Versicherungen: Allianz, AXA, Generali, HUK-Coburg, ERGO, etc.
-  - Krankenkassen: TK, AOK, Barmer, DAK, IKK
-  - Telekommunikation: Vodafone, Telekom, O2
-  - Banken: Sparkasse, Volksbank, N26, DKB
-  - Logistik: DHL, Hermes, UPS, FedEx
-  - Online: Amazon, eBay, PayPal
+- **🏢 Absender-Erkennung**
+  - **Mit AI (empfohlen):** Erkennt **ALLE Firmen** automatisch, nicht nur vordefinierte
+  - **Ohne AI (Fallback):** 40+ bekannte Firmen (Allianz, Vodafone, Amazon, etc.)
+  - Versicherungen, Krankenkassen, Banken, Telekommunikation, Logistik, Online-Händler
 
 - **📝 Dokumenttyp-Erkennung**
   - Rechnung, Vertrag, Bescheid, Mahnung, Kündigung
