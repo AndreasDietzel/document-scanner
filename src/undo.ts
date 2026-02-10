@@ -20,7 +20,7 @@ export interface UndoState {
   lastBatch: number;
 }
 
-const UNDO_STATE_PATH = path.join(os.homedir(), '.mcp-scan-undo.json');
+const UNDO_STATE_PATH = path.join(os.homedir(), '.doc-scan-undo.json');
 
 /**
  * Load undo state

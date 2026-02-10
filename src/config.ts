@@ -1,6 +1,6 @@
 /**
- * Configuration Management for MCP Document Scanner
- * Handles ~/.mcp-scan.json config file
+ * Configuration Management for Document Scanner
+ * Handles ~/.doc-scan.json config file
  */
 
 import * as fs from 'fs';
@@ -23,6 +23,8 @@ export interface ScanConfig {
   perplexityApiKey?: string;
   perplexityModel?: string;
   aiConfidenceThreshold?: number; // Minimum confidence to use AI results
+  // Personal Information (treated confidentially like API key)
+  birthDate?: string; // Format: DD.MM.YYYY - prevents misidentification as document date
 }
 
 export const DEFAULT_CONFIG: ScanConfig = {
@@ -43,10 +45,10 @@ export const DEFAULT_CONFIG: ScanConfig = {
   aiConfidenceThreshold: 0.5
 };
 
-const CONFIG_PATH = path.join(os.homedir(), '.mcp-scan.json');
+const CONFIG_PATH = path.join(os.homedir(), '.doc-scan.json');
 
 /**
- * Load configuration from ~/.mcp-scan.json
+ * Load configuration from ~/.doc-scan.json
  */
 export function loadConfig(): ScanConfig {
   try {
@@ -62,7 +64,7 @@ export function loadConfig(): ScanConfig {
 }
 
 /**
- * Save configuration to ~/.mcp-scan.json
+ * Save configuration to ~/.doc-scan.json
  */
 export function saveConfig(config: ScanConfig): boolean {
   try {

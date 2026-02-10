@@ -21,7 +21,7 @@
 - ✅ **Config-Example**: `config.example.json` ohne echten Key (sicher für Repo)
 - ✅ **Permission Checks**: Warnt bei zu offenen Dateiberechtigungen (Unix)
 - ✅ **Masked Logging**: Keys als `pplx-1234...5678` in Ausgaben
-- ✅ **Lokale Speicherung**: `~/.mcp-scan.json` nur lokal, **NIEMALS** im Repo
+- ✅ **Lokale Speicherung**: `~/.doc-scan.json` nur lokal, **NIEMALS** im Repo
 
 ### 3. **Environment Security**
 - ✅ **Root-Detection**: Warnt wenn Tool als root läuft (nicht empfohlen)
@@ -56,7 +56,7 @@ brew install poppler tesseract tesseract-lang
 
 ### Test mit gescanntem PDF:
 ```bash
-mcp-scan gescanntes-dokument.pdf --preview --verbose
+doc-scan gescanntes-dokument.pdf --preview --verbose
 ```
 
 ---
@@ -146,7 +146,7 @@ cd mcp-document-scanner
 npm install
 npm run build
 npm link
-mcp-scan --setup  # Konfiguration mit deinem API-Key
+doc-scan --setup  # Konfiguration mit deinem API-Key
 ```
 
 ---
@@ -154,7 +154,7 @@ mcp-scan --setup  # Konfiguration mit deinem API-Key
 ## 🔐 Wichtige Security-Hinweise
 
 ### ✅ DEIN API-KEY IST SICHER!
-- Gespeichert in: `~/.mcp-scan.json` (nur lokal)
+- Gespeichert in: `~/.doc-scan.json` (nur lokal)
 - **NIEMALS** im Git-Repo
 - Geschützt durch `.gitignore`
 - Warnung bei falschen Dateiberechtigungen
@@ -162,20 +162,20 @@ mcp-scan --setup  # Konfiguration mit deinem API-Key
 ### Prüfen ob sicher:
 ```bash
 # Config sollte nur für dich lesbar sein
-ls -la ~/.mcp-scan.json
+ls -la ~/.doc-scan.json
 # Sollte zeigen: -rw------- (600)
 
 # Bei Bedarf Rechte korrigieren:
-chmod 600 ~/.mcp-scan.json
+chmod 600 ~/.doc-scan.json
 ```
 
 ### Bei Problemen:
 ```bash
 # Setup neu durchlaufen
-mcp-scan --setup
+doc-scan --setup
 
 # Verbose-Modus für Details
-mcp-scan <file> --verbose
+doc-scan <file> --verbose
 ```
 
 ---

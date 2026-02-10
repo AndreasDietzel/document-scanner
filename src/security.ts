@@ -1,5 +1,5 @@
 /**
- * Security utilities for MCP Document Scanner
+ * Security utilities for Document Scanner
  * ISO 25010 Security Quality Attributes:
  * - Confidentiality: Protect sensitive data (API keys, file content)
  * - Integrity: Validate input data

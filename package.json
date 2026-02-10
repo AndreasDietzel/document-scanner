@@ -1,11 +1,11 @@
 {
-  "name": "mcp-document-scanner",
-  "version": "2.2.2",
+  "name": "document-scanner",
+  "version": "2.3.0",
   "description": "Intelligent document scanning and renaming CLI with AI support (Perplexity), OCR, and ISO 25010 security for macOS",
   "type": "module",
   "main": "build/cli.js",
   "bin": {
-    "mcp-scan": "./build/cli.js"
+    "doc-scan": "./build/cli.js"
   },
   "scripts": {
     "build": "tsc",
@@ -30,12 +30,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/AndreasDietzel/mcp-document-scanner.git"
+    "url": "git+https://github.com/AndreasDietzel/document-scanner.git"
   },
   "bugs": {
-    "url": "https://github.com/AndreasDietzel/mcp-document-scanner/issues"
+    "url": "https://github.com/AndreasDietzel/document-scanner/issues"
   },
-  "homepage": "https://github.com/AndreasDietzel/mcp-document-scanner#readme",
+  "homepage": "https://github.com/AndreasDietzel/document-scanner#readme",
   "dependencies": {
     "@types/adm-zip": "^0.5.7",
     "@types/prompts": "^2.4.9",

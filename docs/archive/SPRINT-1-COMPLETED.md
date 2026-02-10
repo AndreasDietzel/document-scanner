@@ -53,8 +53,8 @@
 ### CLI-Befehle
 ```bash
 # Neu in v1.1.0
-mcp-scan datei.pdf --verbose      # Detaillierter Output
-mcp-scan *.pdf --execute --verbose  # Batch mit Debug-Info
+doc-scan datei.pdf --verbose      # Detaillierter Output
+doc-scan *.pdf --execute --verbose  # Batch mit Debug-Info
 ```
 
 ---
@@ -95,7 +95,7 @@ node build/cli.js test-data/test-rechnung.txt --preview --verbose
 ## 🎯 Nächste Schritte
 
 ### Sprint 2 - Core Features (empfohlen)
-1. **Opt-01:** Konfigurationsdatei (~/.mcp-scan.json)
+1. **Opt-01:** Konfigurationsdatei (~/.doc-scan.json)
 2. **Opt-04:** Kategorisierung nach Branche
 3. **Opt-13:** Interaktiver Setup-Wizard
 4. **Opt-17:** Undo-Funktion

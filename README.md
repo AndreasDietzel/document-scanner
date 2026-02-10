@@ -1,4 +1,4 @@
-# 🎯 MCP Document Scanner CLI
+# 🎯 Document Scanner CLI
 
 **Intelligente Dokumentenerkennung und Umbenennung mit OCR für macOS**
 
@@ -8,14 +8,21 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 [![macOS](https://img.shields.io/badge/macOS-Monterey%2B-blue)](https://www.apple.com/macos/)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green)](https://nodejs.org/)
 [![OCR](https://img.shields.io/badge/OCR-Tesseract-orange)](https://github.com/tesseract-ocr/tesseract)
-[![Version](https://img.shields.io/badge/Version-2.2.2-brightgreen)](package.json)
+[![Version](https://img.shields.io/badge/Version-2.3.0-brightgreen)](package.json)
 [![Security](https://img.shields.io/badge/Security-ISO%2025010-blue)](SECURITY.md)
 
 ---
 
+## ✨ Features v2.3 - Personal Data Protection
+
+### 🔒 **NEU: Geburtsdatum-Schutz**
+- **Geburtsdatum-Konfiguration**: Verhindert Fehlerkennungen bei Briefkopf-Analysen
+- **Vertrauliche Behandlung**: Wie API-Keys, lokal in `~/.doc-scan.json` gespeichert
+- **Setup-Integration**: Einfache Eingabe im interaktiven Setup-Wizard
+
 ## ✨ Features v2.2 - Security & OCR Fixes
 
-### 🔒 **NEU: Security & ISO 25010 Compliance**
+### 🔒 **Security & ISO 25010 Compliance**
 - **Input Validation**: Path Traversal Protection, File Size Limits (100MB)
 - **API Key Protection**: Sichere lokale Speicherung, Permission Checks
 - **Enhanced .gitignore**: Secrets/Keys werden automatisch geschützt
@@ -40,7 +47,7 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 - **🏷️ Bis zu 5 Buzzwords** automatisch aus Dokumentinhalten extrahiert
 - **🎯 Intelligente Absender-Erkennung** auch für unbekannte Firmen
 - **📊 Confidence-Score** mit automatischem Pattern-Matching Fallback
-- **⚙️ Konfigurierbar** über Setup-Wizard oder `~/.mcp-scan.json`
+- **⚙️ Konfigurierbar** über Setup-Wizard oder `~/.doc-scan.json`
 - **🔐 Privacy-First**: API-Key lokal gespeichert, maskierte Ausgabe
 
 **Beispiel AI-Output:**
@@ -59,8 +66,8 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 ## ✨ Features v2.0
 
 ### 🔧 **NEU: Konfigurationsmanagement**
-- **~/.mcp-scan.json** - Persistente Einstellungen
-- **Interaktiver Setup-Wizard** (`mcp-scan --setup`)
+- **~/.doc-scan.json** - Persistente Einstellungen
+- **Interaktiver Setup-Wizard** (`doc-scan --setup`)
 - **Standard-Modus** wählbar (Preview/Execute)
 - **OCR-Konfiguration** (Sprache, Enable/Disable)
 - **Eigene Firmennamen** hinzufügen
@@ -73,7 +80,7 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 - **Aktivierbar** via Config oder Setup
 
 ### ⏮️ **NEU: Undo-Funktion**
-- **`mcp-scan --undo`** - Letzte Batch-Umbenennung rückgängig machen
+- **`doc-scan --undo`** - Letzte Batch-Umbenennung rückgängig machen
 - **Automatisches Tracking** aller Operationen
 - **Batch-Erkennung** (Gruppierung nach Zeit)
 - **Statistiken** mit `--undo-stats`
@@ -139,7 +146,7 @@ Standalone Command-Line Tool mit macOS Kontextmenü-Integration (Quick Action) f
 ### 🚀 Batch-Verarbeitung
 
 - **Mehrere Dateien gleichzeitig** scannen und umbenennen
-- **Globbing-Support**: `mcp-scan *.pdf --execute`
+- **Globbing-Support**: `doc-scan *.pdf --execute`
 - Zusammenfassung mit Statistiken
 - Fehlerbehandlung pro Datei
 
@@ -177,13 +184,13 @@ npm install
 # Build ausführen
 npm run build
 
-# Global installieren (macht mcp-scan verfügbar)
+# Global installieren (macht doc-scan verfügbar)
 npm link
 ```
 
 **Test:**
 ```bash
-mcp-scan --help
+doc-scan --help
 # Sollte die Hilfe anzeigen
 ```
 
@@ -194,7 +201,7 @@ mcp-scan --help
 # → https://www.perplexity.ai/settings/api
 
 # 2. Setup-Wizard starten
-mcp-scan --setup
+doc-scan --setup
 
 # 3. Bei "AI-Enhancement aktivieren?" → Ja wählen
 # 4. API-Key eingeben (wird maskiert angezeigt)
@@ -202,7 +209,7 @@ mcp-scan --setup
 
 **Manuelle Konfiguration:**
 ```bash
-# ~/.mcp-scan.json bearbeiten
+# ~/.doc-scan.json bearbeiten
 {
   "enableAI": true,
   "perplexityApiKey": "pplx-your-key-here"
@@ -230,35 +237,35 @@ mcp-scan --setup
 
 ```bash
 # 1️⃣ Setup-Wizard ausführen (erstmalig)
-mcp-scan --setup
+doc-scan --setup
 
 # 2️⃣ Einzelne Datei analysieren (Vorschau)
-mcp-scan ~/Downloads/rechnung.pdf
+doc-scan ~/Downloads/rechnung.pdf
 
 # 3️⃣ Einzelne Datei umbenennen
-mcp-scan ~/Downloads/rechnung.pdf --execute
+doc-scan ~/Downloads/rechnung.pdf --execute
 
 # 4️⃣ Batch-Verarbeitung mit Kategorisierung
-mcp-scan ~/Downloads/*.pdf --execute --verbose
+doc-scan ~/Downloads/*.pdf --execute --verbose
 
 # 5️⃣ Letzte Aktion rückgängig machen
-mcp-scan --undo
+doc-scan --undo
 ```
 
 ### Neue v2.0 Befehle
 
 ```bash
 # Setup-Wizard ausführen
-mcp-scan --setup
+doc-scan --setup
 
 # Undo letzte Batch-Umbenennung
-mcp-scan --undo
+doc-scan --undo
 
 # Undo-Statistiken anzeigen
-mcp-scan --undo-stats
+doc-scan --undo-stats
 
 # Mit verbose Output (zeigt Kategorien)
-mcp-scan file.pdf --preview --verbose
+doc-scan file.pdf --preview --verbose
 ```
 
 ---
@@ -269,7 +276,7 @@ Siehe [MACOS-KONTEXTMENU.md](MACOS-KONTEXTMENU.md) für detaillierte Anleitung.
 
 **Kurzfassung:**
 1. Automator öffnen → Schnellaktion erstellen
-2. Shell-Script hinzufügen mit `mcp-scan` Aufruf
+2. Shell-Script hinzufügen mit `doc-scan` Aufruf
 3. Speichern als "Mit MCP scannen und umbenennen"
 4. **Rechtsklick im Finder** → Quick Action verwenden
 
@@ -281,22 +288,22 @@ Siehe [MACOS-KONTEXTMENU.md](MACOS-KONTEXTMENU.md) für detaillierte Anleitung.
 
 ```bash
 # Einzelne Datei (mit Dialog)
-mcp-scan document.pdf
+doc-scan document.pdf
 
 # Vorschau ohne Umbenennung
-mcp-scan invoice.pdf --preview
+doc-scan invoice.pdf --preview
 
 # Automatisch umbenennen (ohne Dialog)
-mcp-scan scan123.pdf --execute
+doc-scan scan123.pdf --execute
 
 # Mehrere Dateien
-mcp-scan file1.pdf file2.pdf file3.pdf --execute
+doc-scan file1.pdf file2.pdf file3.pdf --execute
 
 # Alle PDFs im Ordner
-mcp-scan ~/Downloads/*.pdf --preview
+doc-scan ~/Downloads/*.pdf --preview
 
 # Vollautomatisch und still
-mcp-scan document.pdf --execute --silent
+doc-scan document.pdf --execute --silent
 ```
 
 ### Finder Kontextmenü
@@ -347,7 +354,7 @@ Optional: **⌘⌥S** zuweisen
 
 ```bash
 # Alle PDFs im Downloads analysieren
-mcp-scan ~/Downloads/*.pdf --preview
+doc-scan ~/Downloads/*.pdf --preview
 
 # Ausgabe:
 # ============================================================
@@ -367,7 +374,7 @@ mcp-scan ~/Downloads/*.pdf --preview
 #   ...
 
 # Tatsächlich umbenennen
-mcp-scan ~/Downloads/*.pdf --execute
+doc-scan ~/Downloads/*.pdf --execute
 ```
 
 ---
@@ -416,7 +423,7 @@ npm run build
 
 ## 🐛 Troubleshooting
 
-### "mcp-scan: command not found"
+### "doc-scan: command not found"
 
 **Problem:** CLI nicht global installiert.
 
@@ -463,7 +470,7 @@ tesseract --list-langs
 **Debugging:**
 ```bash
 # Detaillierte Ausgabe
-mcp-scan datei.pdf --silent  # Zeigt Console-Output
+doc-scan datei.pdf --silent  # Zeigt Console-Output
 ```
 
 ---
@@ -514,7 +521,7 @@ mkdir -p test-data
 echo "Test content" > test-data/test.txt
 
 # Testen
-mcp-scan test-data/test.txt --preview
+doc-scan test-data/test.txt --preview
 ```
 
 ---
@@ -545,7 +552,7 @@ Contributions sind willkommen! Bitte:
 - [ ] Zusätzliche Dokumenttypen erkennen
 - [ ] GUI-Version mit Electron
 - [ ] Windows/Linux Unterstützung
-- [ ] Konfigurationsdatei (`~/.mcp-scan.json`)
+- [ ] Konfigurationsdatei (`~/.doc-scan.json`)
 - [ ] Plugin-System für eigene Muster
 
 ---

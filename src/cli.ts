@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * MCP Document Intelligence CLI
+ * Document Scanner CLI
  * Standalone tool for quick file analysis and renaming
  */
 
@@ -349,11 +349,23 @@ function extractTimestamp(originalName: string, filePath: string, text: string):
     return scannerMatch[1].substring(0, 10); // Only date part
   }
   
-  // 2. Datum aus Briefkopf (erste 1000 Zeichen)
+  // 2. Datum aus Briefkopf (erste 1000 Zeichen) - aber überspringe Geburtsdatum
   const textStart = text.substring(0, 1000);
-  const dateMatch = textStart.match(/(\d{2}\.\d{2}\.\d{4})/);
-  if (dateMatch) {
-    const [day, month, year] = dateMatch[1].split('.');
+  const dateMatches = textStart.matchAll(/(\d{2}\.\d{2}\.\d{4})/g);
+  
+  for (const match of dateMatches) {
+    const foundDate = match[1];
+    
+    // Skip if this is the user's birth date (configured to prevent false positives)
+    if (CONFIG?.birthDate && foundDate === CONFIG.birthDate) {
+      if (VERBOSE) {
+        console.log(chalk.yellow(`⚠️  Überspringe Geburtsdatum (${foundDate}) - nicht als Dokumentdatum verwenden`));
+      }
+      continue; // Try next date match
+    }
+    
+    // Use this date
+    const [day, month, year] = foundDate.split('.');
     return `${year}-${month}-${day}`;
   }
   
@@ -727,29 +739,29 @@ async function main() {
   
   if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
     console.log(`
-${chalk.bold.cyan('MCP Document Intelligence CLI v2.0')}
+${chalk.bold.cyan('Document Scanner CLI v2.3.0')}
 
 ${chalk.bold('Verwendung:')}
-  mcp-scan <datei> [<datei2> ...]   Analysiert eine oder mehrere Dateien
-  mcp-scan <datei> --preview        Analysiert ohne Umbenennung
-  mcp-scan <datei> --execute        Benennt automatisch um (ohne Dialog)
-  mcp-scan <datei> --silent         Keine Benachrichtigungen
-  mcp-scan <datei> --verbose        Detaillierte Debug-Ausgabe
+  doc-scan <datei> [<datei2> ...]   Analysiert eine oder mehrere Dateien
+  doc-scan <datei> --preview        Analysiert ohne Umbenennung
+  doc-scan <datei> --execute        Benennt automatisch um (ohne Dialog)
+  doc-scan <datei> --silent         Keine Benachrichtigungen
+  doc-scan <datei> --verbose        Detaillierte Debug-Ausgabe
 
 ${chalk.bold('Spezial-Befehle:')}
-  mcp-scan --setup                  Interaktiver Setup-Wizard
-  mcp-scan --undo                   Macht letzte Batch-Umbenennung rückgängig
-  mcp-scan --undo-stats             Zeigt Undo-Statistiken
+  doc-scan --setup                  Interaktiver Setup-Wizard
+  doc-scan --undo                   Macht letzte Batch-Umbenennung rückgängig
+  doc-scan --undo-stats             Zeigt Undo-Statistiken
 
 ${chalk.bold('Mehrfachdateien:')}
-  mcp-scan file1.pdf file2.pdf file3.pdf --execute
-  mcp-scan ~/Downloads/*.pdf --preview
+  doc-scan file1.pdf file2.pdf file3.pdf --execute
+  doc-scan ~/Downloads/*.pdf --preview
 
 ${chalk.bold('Beispiele:')}
-  mcp-scan ~/Downloads/scan123.pdf
-  mcp-scan invoice.pdf --execute
-  mcp-scan document.docx --preview --silent
-  mcp-scan *.pdf --execute --verbose
+  doc-scan ~/Downloads/scan123.pdf
+  doc-scan invoice.pdf --execute
+  doc-scan document.docx --preview --silent
+  doc-scan *.pdf --execute --verbose
 `);
     process.exit(0);
   }

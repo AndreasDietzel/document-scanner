@@ -23,7 +23,7 @@ Die Vorschläge sind kategorisiert nach den 8 Hauptmerkmalen:
 
 ## 1️⃣ Functional Suitability - Funktionale Eignung
 
-### ✅ Opt-01: Konfigurationsdatei (~/.mcp-scan.json)
+### ✅ Opt-01: Konfigurationsdatei (~/.doc-scan.json)
 **Problem:** Keine persistente Konfiguration, Nutzer müssen Flags wiederholen
 **Lösung:** JSON-Konfigurationsdatei für Standard-Einstellungen
 ```json
@@ -89,7 +89,7 @@ import { Worker } from 'worker_threads';
 
 ### ✅ Opt-07: Caching von OCR-Ergebnissen
 **Problem:** Dieselbe Datei wird bei wiederholtem Scan erneut OCR-verarbeitet
-**Lösung:** SHA256-basierter Cache in ~/.mcp-scan-cache/
+**Lösung:** SHA256-basierter Cache in ~/.doc-scan-cache/
 ```typescript
 const cacheKey = crypto.createHash('sha256').update(fileBuffer).digest('hex');
 if (cache.has(cacheKey)) return cache.get(cacheKey);
@@ -138,9 +138,9 @@ const response = await prompts({ type: 'confirm', message: 'Umbenennen?' });
 
 ### ✅ Opt-13: Interaktiver Setup-Wizard
 **Problem:** Erste Nutzung ist nicht geführt
-**Lösung:** `mcp-scan --setup` mit interaktivem Wizard
+**Lösung:** `doc-scan --setup` mit interaktivem Wizard
 ```bash
-mcp-scan --setup
+doc-scan --setup
 → Sprache wählen? [deu/eng]
 → Standard-Modus? [preview/execute]
 → OCR aktivieren? [ja/nein]
@@ -180,10 +180,10 @@ bar.update(currentFile, { filename: path.basename(file) });
 
 ### ✅ Opt-17: Undo-Funktion
 **Problem:** Keine Rückgängig-Funktion nach Batch-Umbenennung
-**Lösung:** State-File mit Original-Namen, `mcp-scan --undo`
+**Lösung:** State-File mit Original-Namen, `doc-scan --undo`
 ```bash
-mcp-scan *.pdf --execute  # Erstellt ~/.mcp-scan-undo.json
-mcp-scan --undo           # Macht letzten Batch rückgängig
+doc-scan *.pdf --execute  # Erstellt ~/.doc-scan-undo.json
+doc-scan --undo           # Macht letzten Batch rückgängig
 ```
 **Priorität:** 🔴 Hoch
 
@@ -237,9 +237,9 @@ function validateFilename(name: string): { valid: boolean, errors: string[] }
 
 ### ✅ Opt-23: Plugin-System für Custom Patterns
 **Problem:** Code-Änderungen nötig für neue Firmen/Patterns
-**Lösung:** Plugin-Verzeichnis ~/.mcp-scan-plugins/
+**Lösung:** Plugin-Verzeichnis ~/.doc-scan-plugins/
 ```typescript
-// ~/.mcp-scan-plugins/my-company.js
+// ~/.doc-scan-plugins/my-company.js
 export default {
   name: 'MyCompany',
   patterns: [/My Company GmbH/i],

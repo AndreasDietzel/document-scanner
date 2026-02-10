@@ -5,6 +5,7 @@
   "enableCategories": true,
   "silent": false,
   "customCompanies": [],
+  "birthDate": "DD.MM.YYYY",
   "enableAI": false,
   "perplexityApiKey": "YOUR_API_KEY_HERE",
   "perplexityModel": "sonar",

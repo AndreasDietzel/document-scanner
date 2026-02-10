@@ -12,8 +12,8 @@
 ## 📋 Voraussetzungen
 
 - ✅ mcp-document-scanner v2.0 installiert und gebaut
-- ✅ `npm link` ausgeführt (macht `mcp-scan` global verfügbar)
-- ✅ Setup-Wizard durchlaufen (`mcp-scan --setup`)
+- ✅ `npm link` ausgeführt (macht `doc-scan` global verfügbar)
+- ✅ Setup-Wizard durchlaufen (`doc-scan --setup`)
 
 ---
 
@@ -64,7 +64,7 @@ for file in "$@"
 do
   # Nur Dateityp prüfen, nicht Pfad - funktioniert überall (Downloads, Desktop, etc.)
   if [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]]; then
-    mcp-scan "$file" --preview --verbose
+    doc-scan "$file" --preview --verbose
   fi
 done
 
@@ -93,7 +93,7 @@ skipped=0
 for file in "$@"
 do
   if [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]]; then
-    result=$(mcp-scan "$file" --execute --silent 2>&1)
+    result=$(doc-scan "$file" --execute --silent 2>&1)
     
     if echo "$result" | grep -q "Erfolgreich umbenannt"; then
       ((renamed++))
@@ -130,12 +130,12 @@ response=$(osascript -e "button returned of (display dialog \"$message\" buttons
 if [ "$response" = "Umbenennen" ]; then
   # Execute-Modus (funktioniert überall!)
   for file in "$@"; do
-    [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]] && mcp-scan "$file" --execute
+    [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]] && doc-scan "$file" --execute
   done
 elif [ "$response" = "Nur Vorschau" ]; then
   # Preview-Modus (funktioniert überall!)
   for file in "$@"; do
-    [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]] && mcp-scan "$file" --preview
+    [[ "$file" =~ \.(pdf|doc|docx|xls|xlsx|ppt|pptx|pages|numbers|keynote|odt|ods|odp|txt|png|jpg|jpeg|rar|zip|7z)$ ]] && doc-scan "$file" --preview
   done
 fi
 ```
@@ -188,12 +188,12 @@ Falls du lieber ein CLI-Script nutzt:
 # Script erstellen
 cat > /usr/local/bin/finder-scan << 'EOF'
 #!/bin/zsh
-# Öffnet markierte Finder-Dateien mit mcp-scan
+# Öffnet markierte Finder-Dateien mit doc-scan
 
 files=$(osascript -e 'tell application "Finder" to set selectedItems to selection as alias list' -e 'repeat with anItem in selectedItems' -e 'POSIX path of anItem & linefeed' -e 'end repeat')
 
 for file in $files; do
-  [[ "$file" =~ \.(pdf|docx|pages|txt|png|jpg|jpeg)$ ]] && mcp-scan "$file" --preview
+  [[ "$file" =~ \.(pdf|docx|pages|txt|png|jpg|jpeg)$ ]] && doc-scan "$file" --preview
 done
 EOF
 
@@ -242,14 +242,14 @@ if [[ "$file" =~ \.(pdf|docx|pages)$ ]]; then
 
 ## 🐛 Troubleshooting
 
-### Problem: "mcp-scan: command not found"
+### Problem: "doc-scan: command not found"
 
 **Ursache:** NPM-Path fehlt im Script oder `npm link` nicht ausgeführt
 
 **Lösung 1:** Prüfe ob npm link korrekt ist
 ```bash
-which mcp-scan
-# Sollte zeigen: /usr/local/bin/mcp-scan oder /opt/homebrew/bin/mcp-scan
+which doc-scan
+# Sollte zeigen: /usr/local/bin/doc-scan oder /opt/homebrew/bin/doc-scan
 
 # Falls nicht, npm link neu ausführen:
 cd ~/Projects/mcp-document-scanner
@@ -333,7 +333,7 @@ ls -la ~/Library/Services/
 #!/bin/zsh
 cd ~/Downloads
 for file in *.pdf; do
-  [[ -f "$file" ]] && mcp-scan "$file" --execute --silent
+  [[ -f "$file" ]] && doc-scan "$file" --execute --silent
 done
 osascript -e 'display notification "Downloads aufgeräumt" with title "MCP Scanner"'
 ```
@@ -351,7 +351,7 @@ ARCHIVE="/Users/$(whoami)/Documents/DateiArchiv/Archiv"
 for file in "$@"; do
   if [[ "$file" =~ \.(pdf|docx)$ ]]; then
     # Erst umbenennen
-    mcp-scan "$file" --execute --silent
+    doc-scan "$file" --execute --silent
     
     # Dann ins Archiv verschieben (nach Jahr)
     year=$(date +%Y)

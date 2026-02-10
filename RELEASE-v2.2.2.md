@@ -89,7 +89,7 @@ npm run build
 ### Verify
 ```bash
 # Test mit iCloud PDF
-mcp-scan "/Users/andreasdietzel/Library/Mobile Documents/com~apple~CloudDocs/DateiArchiv/Test.pdf" --preview --verbose
+doc-scan "/Users/andreasdietzel/Library/Mobile Documents/com~apple~CloudDocs/DateiArchiv/Test.pdf" --preview --verbose
 
 # Erwartete Ausgabe:
 # ✅ OCR erfolgreich: XXX Zeichen extrahiert
@@ -110,7 +110,7 @@ Wenn OCR-Probleme auftreten:
 
 ```bash
 # 1. Verbose Logging aktivieren
-mcp-scan dokument.pdf --preview --verbose
+doc-scan dokument.pdf --preview --verbose
 
 # 2. Manuelle OCR testen
 pdftoppm -singlefile -png dokument.pdf /tmp/test
@@ -188,9 +188,9 @@ npm link
 ## 📞 Support
 
 Bei Problemen bitte GitHub Issue erstellen mit:
-- Verwendete Version (`mcp-scan --version`)
+- Verwendete Version (`doc-scan --version`)
 - PDF-Dateipfad (anonymisiert)
-- Verbose Output (`mcp-scan file.pdf --preview --verbose`)
+- Verbose Output (`doc-scan file.pdf --preview --verbose`)
 - Tesseract Version (`tesseract --version`)
 
 ---

@@ -8,7 +8,7 @@ import chalk from 'chalk';
 import { saveConfig, ScanConfig, DEFAULT_CONFIG, getConfigPath } from './config.js';
 
 export async function runSetupWizard(): Promise<void> {
-  console.log(chalk.bold.cyan('\n🔧 MCP Document Scanner - Setup Wizard\n'));
+  console.log(chalk.bold.cyan('\n🔧 Document Scanner - Setup Wizard\n'));
   console.log(chalk.gray('Beantworte ein paar Fragen zur Einrichtung deiner Dokumenten-Scanner-Konfiguration.\n'));
   
   const response = await prompts([
@@ -21,6 +21,25 @@ export async function runSetupWizard(): Promise<void> {
         { title: 'Execute (Automatisch umbenennen)', value: 'execute' }
       ],
       initial: 0
+    },
+    {
+      type: 'text',
+      name: 'birthDate',
+      message: '🔒 Dein Geburtsdatum (DD.MM.YYYY) - wird vertraulich behandelt:',
+      validate: (value: string) => {
+        if (!value) return true; // Optional
+        const pattern = /^\d{2}\.\d{2}\.\d{4}$/;
+        if (!pattern.test(value)) return 'Format: DD.MM.YYYY (z.B. 22.06.1979)';
+        
+        // Validate date is realistic
+        const [day, month, year] = value.split('.').map(Number);
+        if (day < 1 || day > 31) return 'Tag muss zwischen 1 und 31 liegen';
+        if (month < 1 || month > 12) return 'Monat muss zwischen 1 und 12 liegen';
+        if (year < 1900 || year > new Date().getFullYear()) return 'Jahr unrealistisch';
+        
+        return true;
+      },
+      initial: ''
     },
     {
       type: 'confirm',
@@ -82,6 +101,7 @@ export async function runSetupWizard(): Promise<void> {
   const config: ScanConfig = {
     ...DEFAULT_CONFIG,
     defaultMode: response.defaultMode,
+    birthDate: response.birthDate?.trim() || undefined,
     enableAI: response.enableAI || false,
     perplexityApiKey: response.perplexityApiKey || undefined,
     enableOCR: response.enableOCR,
@@ -97,6 +117,9 @@ export async function runSetupWizard(): Promise<void> {
   if (saveConfig(config)) {
     console.log(chalk.green('\n✅ Konfiguration gespeichert!\n'));
     console.log(chalk.gray(`📁 Speicherort: ${getConfigPath()}\n`));
+    if (config.birthDate) {
+      console.log(chalk.cyan(`🔒 Geburtsdatum:          ${config.birthDate.substring(0, 3)}*******  (vertraulich)`));
+    }
     console.log(chalk.bold(`🤖 AI-Enhancement:       ${config.enableAI ? 'Ja' : 'Nein'}`));
     if (config.enableAI && config.perplexityApiKey) {
       const maskedKey = config.perplexityApiKey.substring(0, 8) + '...' + config.perplexityApiKey.substring(config.perplexityApiKey.length - 4);

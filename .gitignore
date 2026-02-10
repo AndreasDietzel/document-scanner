@@ -25,8 +25,13 @@ dist/
 !example-config.json
 !*config.example.json
 
-# User Config (falls versehentlich im Repo)
+# User Config Files (vertraulich - niemals committen!)
+.doc-scan.json
+.doc-scan-undo.json
+doc-scan-config.json
+# Legacy config names (für Rückwärtskompatibilität)
 .mcp-scan.json
+.mcp-scan-undo.json
 mcp-scan-config.json
 
 # macOS

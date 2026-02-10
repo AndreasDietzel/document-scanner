@@ -8,9 +8,9 @@
 
 ## ✅ Umgesetzte Features
 
-### Opt-01: Konfigurationsdatei (~/.mcp-scan.json)
+### Opt-01: Konfigurationsdatei (~/.doc-scan.json)
 - **Implementiert:** Persistente Benutzer-Konfiguration
-- **Speicherort:** `~/.mcp-scan.json`
+- **Speicherort:** `~/.doc-scan.json`
 - **Features:**
   - ✅ Standard-Modus (preview/execute)
   - ✅ OCR-Einstellungen (aktiviert, Sprache)
@@ -55,7 +55,7 @@
 
 ### Opt-13: Interaktiver Setup-Wizard
 - **Implementiert:** Geführte Erstkonfiguration
-- **Aufruf:** `mcp-scan --setup`
+- **Aufruf:** `doc-scan --setup`
 - **Features:**
   - ✅ Standard-Modus wählen
   - ✅ OCR aktivieren/deaktivieren
@@ -78,12 +78,12 @@
 ? Eigene Firmen? ›
 
 ✅ Konfiguration gespeichert!
-📁 Speicherort: ~/.mcp-scan.json
+📁 Speicherort: ~/.doc-scan.json
 ```
 
 ### Opt-17: Undo-Funktion
 - **Implementiert:** Rückgängig-Funktion für Batch-Umbenennungen
-- **State-File:** `~/.mcp-scan-undo.json`
+- **State-File:** `~/.doc-scan-undo.json`
 - **Features:**
   - ✅ Automatisches Tracking aller Umbenennungen
   - ✅ Batch-Erkennung (Operationen < 5 Sekunden = gleicher Batch)
@@ -94,10 +94,10 @@
 **Neue Befehle:**
 ```bash
 # Letzte Batch-Umbenennung rückgängig machen
-mcp-scan --undo
+doc-scan --undo
 
 # Statistiken anzeigen
-mcp-scan --undo-stats
+doc-scan --undo-stats
 ```
 
 **Beispiel-Output:**
@@ -127,7 +127,7 @@ mcp-scan --undo-stats
   - `--undo` - Undo letzte Batch-Umbenennung
   - `--undo-stats` - Zeige Undo-Statistiken
 - **Config-Integration:**
-  - Auto-Load von `~/.mcp-scan.json`
+  - Auto-Load von `~/.doc-scan.json`
   - Merge mit CLI-Flags
   - Auto-Setup bei erstem Aufruf
 
@@ -143,13 +143,13 @@ mcp-scan --undo-stats
 
 ### Test 1: Setup-Wizard
 ```bash
-mcp-scan --setup
+doc-scan --setup
 ```
 **Ergebnis:** ✅ Interaktiver Wizard funktioniert, Config wird gespeichert
 
 ### Test 2: Kategorisierung
 ```bash
-mcp-scan test-data/test-rechnung.txt --preview --verbose
+doc-scan test-data/test-rechnung.txt --preview --verbose
 ```
 **Output:**
 ```
@@ -160,7 +160,7 @@ mcp-scan test-data/test-rechnung.txt --preview --verbose
 
 ### Test 3: Undo-Stats
 ```bash
-mcp-scan --undo-stats
+doc-scan --undo-stats
 ```
 **Output:**
 ```
@@ -173,7 +173,7 @@ mcp-scan --undo-stats
 ### Test 4: Config-Merge
 ```bash
 # Config sagt: preview, CLI sagt: execute
-mcp-scan file.pdf --execute
+doc-scan file.pdf --execute
 ```
 **Ergebnis:** ✅ CLI überschreibt Config korrekt
 
@@ -236,7 +236,7 @@ mcp-scan file.pdf --execute
 
 **Next Steps für den Nutzer:**
 
-1. ✅ `mcp-scan --setup` ausführen
+1. ✅ `doc-scan --setup` ausführen
 2. ✅ Quick Action in Automator einrichten (siehe [MACOS-KONTEXTMENU.md](./MACOS-KONTEXTMENU.md))
 3. ✅ Im Finder testen
 4. ✅ Keyboard Shortcut einrichten (optional)

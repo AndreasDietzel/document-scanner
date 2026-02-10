@@ -39,7 +39,7 @@ const safeName = sanitizeFilename(userInput);
 ### 2. API Key Protection
 
 #### Storage
-- ✅ **Local Storage Only**: ~/.mcp-scan.json (niemals im Repo!)
+- ✅ **Local Storage Only**: ~/.doc-scan.json (niemals im Repo!)
 - ✅ **File Permissions**: Unix 600 (rw-------)
 - ✅ **Automatic Warning**: Warnt bei zu weit geöffneten Rechten
 - ✅ **Format Validation**: Prüft Key-Format vor Speicherung
@@ -59,7 +59,7 @@ const safeName = sanitizeFilename(userInput);
 
 **Echte Config (lokal):**
 ```bash
-~/.mcp-scan.json  # Nur lokal, nie im Repo!
+~/.doc-scan.json  # Nur lokal, nie im Repo!
 ```
 
 ### 3. Command Injection Prevention
@@ -170,7 +170,7 @@ execSync(cmd, { timeout: 30000 });
    config.example.json  # Ohne echte Keys
    
    # Lokal (privat)
-   ~/.mcp-scan.json     # Mit echten Keys
+   ~/.doc-scan.json     # Mit echten Keys
    ```
 
 3. **Validate Input**
@@ -187,21 +187,21 @@ execSync(cmd, { timeout: 30000 });
 1. **Check Permissions**
    ```bash
    # Config sollte nur für User lesbar sein
-   chmod 600 ~/.mcp-scan.json
-   ls -la ~/.mcp-scan.json
+   chmod 600 ~/.doc-scan.json
+   ls -la ~/.doc-scan.json
    # -rw------- (600)
    ```
 
 2. **Rotate API Keys**
    ```bash
    # Regelmäßig Keys erneuern
-   mcp-scan --setup  # Neuer Key eingeben
+   doc-scan --setup  # Neuer Key eingeben
    ```
 
 3. **Monitor Logs**
    ```bash
    # Prüfe auf Security-Warnungen
-   mcp-scan <file> --verbose 2>&1 | grep "⚠️"
+   doc-scan <file> --verbose 2>&1 | grep "⚠️"
    ```
 
 ### User Guidelines

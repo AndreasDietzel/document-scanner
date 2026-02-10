@@ -29,7 +29,7 @@ Version 2.1.0 erweitert den MCP Document Scanner um dynamische KI-basierte Dokum
 ### 2. Setup-Wizard ausführen
 
 ```bash
-mcp-scan --setup
+doc-scan --setup
 ```
 
 Im Setup-Wizard:
@@ -39,7 +39,7 @@ Im Setup-Wizard:
 
 ### 3. Manuelle Konfiguration (optional)
 
-Bearbeite `~/.mcp-scan.json`:
+Bearbeite `~/.doc-scan.json`:
 
 ```json
 {
@@ -56,10 +56,10 @@ Bearbeite `~/.mcp-scan.json`:
 
 ```bash
 # Standard-Analyse
-mcp-scan dokument.pdf
+doc-scan dokument.pdf
 
 # Mit Vorschau und Verbose-Logging
-mcp-scan dokument.pdf --preview --verbose
+doc-scan dokument.pdf --preview --verbose
 ```
 
 **Beispiel-Output:**
@@ -78,10 +78,10 @@ mcp-scan dokument.pdf --preview --verbose
 
 ```bash
 # AI im Setup deaktivieren oder API-Key entfernen
-mcp-scan --setup
+doc-scan --setup
 
 # Oder Config-Datei bearbeiten
-echo '{"enableAI": false}' > ~/.mcp-scan.json
+echo '{"enableAI": false}' > ~/.doc-scan.json
 ```
 
 ## Technische Details
@@ -110,7 +110,7 @@ Das Tool sendet strukturierte Prompts im JSON-Format:
 - **Selective Use**: Nur bei aktivierter AI und vorhandenem API-Key
 
 ### Datenschutz
-- **API-Key Verschlüsselung**: Keys werden nur lokal in `~/.mcp-scan.json` gespeichert
+- **API-Key Verschlüsselung**: Keys werden nur lokal in `~/.doc-scan.json` gespeichert
 - **Maskierte Ausgabe**: Keys werden in Logs als `pplx-1234...5678` angezeigt
 - **Keine Dokument-Speicherung**: Perplexity API speichert keine Dokumente dauerhaft
 
@@ -151,7 +151,7 @@ Das Tool sendet strukturierte Prompts im JSON-Format:
 - **Tipp**: Bei häufigem Auftreten `customCompanies` in Config hinzufügen
 
 ### Keine AI-Analyse trotz aktiviertem Setting
-- **Prüfen**: Ist `enableAI: true` in `~/.mcp-scan.json`?
+- **Prüfen**: Ist `enableAI: true` in `~/.doc-scan.json`?
 - **Prüfen**: Ist `perplexityApiKey` korrekt gesetzt?
 - **Prüfen**: Mit `--verbose` Flag detaillierte Logs anzeigen
 
