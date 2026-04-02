@@ -15,7 +15,7 @@ import chalk from "chalk";
 import { loadConfig, mergeWithCLI, ScanConfig, configExists, getConfigPath } from './config.js';
 import { recordRename, undoLastBatch, getUndoStats } from './undo.js';
 import { runSetupWizard } from './setup.js';
-import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled, selectDocumentDateWithAI, AIConfig } from './ai-analysis.js';
+import { analyzeDocumentWithAI, buildFilenameFromAI, isAIEnabled, selectDocumentDateWithAI, analyzeDocumentImageWithClaude, AIConfig, ClaudeConfig } from './ai-analysis.js';
 import {
   validateFilePath,
   sanitizeFilename as secSanitizeFilename,
@@ -55,6 +55,9 @@ function getAIConfig(config: ScanConfig): AIConfig | null {
 let VERBOSE = false;
 let CONFIG: ScanConfig;
 
+// Manche gescannte PDFs (v.a. aus iCloud) brauchen deutlich >30s für pdftoppm/tesseract.
+const OCR_TIMEOUT_MS = 60000;
+
 // Import shared utilities from main index
 function normalizeUnicode(str: string): string {
   return str.normalize('NFC');
@@ -66,6 +69,14 @@ function sanitizeFilename(filename: string): string {
   safe = safe.replace(/[\\]/g, '-');
   safe = safe.trim().replace(/_+/g, '_').replace(/^_|_$/g, '');
   return safe;
+}
+
+function buildUnreadableSuggestion(originalName: string): string {
+  const ext = path.extname(originalName);
+  const nameWithoutExt = path.basename(originalName, ext);
+  const hasUnreadableSuffix = /\(unlesbar\)$/i.test(nameWithoutExt.trim());
+  const cleanName = hasUnreadableSuffix ? nameWithoutExt : `${nameWithoutExt} (unlesbar)`;
+  return `${cleanName}${ext}`;
 }
 
 // Opt-20: Enhanced filename validation
@@ -148,7 +159,7 @@ async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise
           // Konvertiere erste Seite zu PNG (-singlefile = nur erste Seite, -png = PNG Format)
           // Benutze relative Pfade mit cwd=/tmp für bessere Kompatibilität
           const convertCmd = `pdftoppm -singlefile -png "${tempPdfBase}" "${tempPngBase}"`;
-          execSync(convertCmd, { timeout: 30000, cwd: tempDir, encoding: 'utf8' });
+          execSync(convertCmd, { timeout: OCR_TIMEOUT_MS, cwd: tempDir, encoding: 'utf8' });
           
           const pngFile = `${tempPng}.png`;
           
@@ -161,7 +172,7 @@ async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise
           const pngFileBase = `${tempPngBase}.png`;
           const ocrCmd = `tesseract "${pngFileBase}" "${tempOcrBase}" -l ${ocrLang} --psm 1`;
           if (VERBOSE) console.log(chalk.gray(`   Führe aus: ${ocrCmd}`));
-          execSync(ocrCmd, { timeout: 30000, cwd: tempDir, encoding: 'utf8' });
+          execSync(ocrCmd, { timeout: OCR_TIMEOUT_MS, cwd: tempDir, encoding: 'utf8' });
           
           const ocrText = fs.readFileSync(`${tempOcr}.txt`, 'utf8');
           
@@ -199,7 +210,7 @@ async function extractTextWithOCR(filePath: string, config: ScanConfig): Promise
           const tempOutput = path.join('/tmp', `ocr-${Date.now()}`);
           const cmd = `tesseract "${filePath}" "${tempOutput}" -l ${ocrLang} --psm 1 2>/dev/null`;
           
-          execSync(cmd, { timeout: 30000 });
+          execSync(cmd, { timeout: OCR_TIMEOUT_MS });
           
           const ocrText = fs.readFileSync(`${tempOutput}.txt`, 'utf8');
           
@@ -687,6 +698,43 @@ function showDialog(message: string, buttons: string[] = ["OK", "Abbrechen"]): s
   }
 }
 
+// Extrahiere erste Seite als Bild für Claude Vision
+async function extractImageForVision(
+  filePath: string,
+  ext: string
+): Promise<{ base64: string; mediaType: 'image/jpeg' | 'image/png'; tempPath?: string } | null> {
+  try {
+    if (ext === '.pdf') {
+      execSync('pdftoppm -v', { stdio: 'ignore' });
+      const tempBase = path.join('/tmp', `vision-${Date.now()}`);
+      const tempPdf = `${tempBase}-input.pdf`;
+      fs.copyFileSync(filePath, tempPdf);
+      execSync(`pdftoppm -singlefile -png "${path.basename(tempPdf)}" "${path.basename(tempBase)}"`, {
+        cwd: '/tmp',
+        timeout: OCR_TIMEOUT_MS
+      });
+      const pngPath = `${tempBase}.png`;
+      if (!fs.existsSync(pngPath)) return null;
+      const base64 = fs.readFileSync(pngPath).toString('base64');
+      fs.unlinkSync(tempPdf);
+      return { base64, mediaType: 'image/png', tempPath: pngPath };
+    }
+
+    if (['.png'].includes(ext)) {
+      const base64 = fs.readFileSync(filePath).toString('base64');
+      return { base64, mediaType: 'image/png' };
+    }
+
+    if (['.jpg', '.jpeg'].includes(ext)) {
+      const base64 = fs.readFileSync(filePath).toString('base64');
+      return { base64, mediaType: 'image/jpeg' };
+    }
+  } catch (error) {
+    if (VERBOSE) console.log(chalk.gray('   Vision-Bildextraktion fehlgeschlagen'));
+  }
+  return null;
+}
+
 // Einzelne Datei verarbeiten
 async function processFile(
   filePath: string,
@@ -738,13 +786,72 @@ async function processFile(
   const text = await extractText(filePath, config);
   
   if (!text || text.trim().length < 10) {
-    console.log(chalk.yellow(`⚠️  Konnte keinen Text extrahieren - behalte Dateinamen mit Hinweis`));
-    
-    // Originalnamen beibehalten mit Zusatz "(unlesbar)"
     const originalName = path.basename(filePath);
     const ext = path.extname(originalName);
-    const nameWithoutExt = path.basename(originalName, ext);
-    const suggestion = `${nameWithoutExt} (unlesbar)${ext}`;
+
+    // Claude Vision Fallback für image-basierte PDFs und Bilder
+    const aiConfig = CONFIG ? getAIConfig(CONFIG) : null;
+    if (CONFIG?.enableAI && aiConfig?.provider === 'claude') {
+      if (VERBOSE) console.log(chalk.gray('📷 Kein Text gefunden, versuche Claude Vision...'));
+      const imageData = await extractImageForVision(filePath, ext);
+      if (imageData) {
+        const visionAnalysis = await analyzeDocumentImageWithClaude(
+          imageData.base64,
+          imageData.mediaType,
+          aiConfig as ClaudeConfig,
+          VERBOSE
+        );
+        if (imageData.tempPath) {
+          try { fs.unlinkSync(imageData.tempPath); } catch { /* ignore */ }
+        }
+        if (visionAnalysis && visionAnalysis.confidence >= (CONFIG.aiConfidenceThreshold || 0.5)) {
+          const timestamp = await extractTimestamp(originalName, filePath, '');
+          const suggestion = buildFilenameFromAI(visionAnalysis, timestamp, ext);
+
+          if (VERBOSE) {
+            console.log(chalk.magenta(`🤖 Vision-Vorschlag (${(visionAnalysis.confidence * 100).toFixed(0)}% Konfidenz): ${suggestion}`));
+          }
+
+          console.log(chalk.cyan(`\n📝 Vorschlag:`));
+          console.log(chalk.gray(`   Alt: ${originalName}`));
+          console.log(chalk.green(`   Neu: ${suggestion}`));
+
+          if (preview) return { success: true, renamed: false, oldName: originalName, newName: suggestion };
+
+          let shouldRename = execute;
+          if (!execute && !silent) {
+            const response = showDialog(
+              `Datei umbenennen?\n\nAlt: ${originalName}\n\nNeu: ${suggestion}`,
+              ['Umbenennen', 'Abbrechen']
+            );
+            shouldRename = response === 'Umbenennen';
+          }
+
+          if (shouldRename) {
+            const dir = path.dirname(filePath);
+            const newPath = path.join(dir, suggestion);
+            if (fs.existsSync(newPath)) {
+              console.error(chalk.red(`❌ Datei existiert bereits: ${suggestion}`));
+              return { success: false, renamed: false, oldName: originalName, newName: suggestion, error: 'Ziel existiert bereits' };
+            }
+            try {
+              fs.renameSync(filePath, newPath);
+              recordRename(filePath, newPath);
+              console.log(chalk.green(`\n✅ Erfolgreich umbenannt!`));
+              return { success: true, renamed: true, oldName: originalName, newName: path.basename(newPath) };
+            } catch {
+              return { success: false, renamed: false, oldName: originalName, newName: suggestion, error: 'Umbenennung fehlgeschlagen' };
+            }
+          }
+          return { success: true, renamed: false, oldName: originalName, newName: suggestion };
+        }
+      }
+    }
+
+    console.log(chalk.yellow(`⚠️  Konnte keinen Text extrahieren - behalte Dateinamen mit Hinweis`));
+
+    // Originalnamen beibehalten mit Zusatz "(unlesbar)" (ohne doppeltes Suffix)
+    const suggestion = buildUnreadableSuggestion(originalName);
     
     console.log(chalk.cyan(`\n📝 Vorschlag:`));
     console.log(chalk.gray(`   Alt: ${originalName}`));
@@ -754,36 +861,34 @@ async function processFile(
       return { success: true, renamed: false, oldName: originalName, newName: suggestion };
     }
     
-    // Optional umbenennen wenn nicht bereits "(unlesbar)" im Namen
-    if (!originalName.includes('(unlesbar)')) {
-      let shouldRename = execute;
-      
-      if (!execute && !silent) {
-        const response = showDialog(
-          `Dokument unlesbar - Hinweis einfügen?\n\nAlt: ${originalName}\n\nNeu: ${suggestion}`,
-          ["Umbenennen", "Skip"]
-        );
-        shouldRename = response === "Umbenennen";
+    // Optional umbenennen; falls Name bereits identisch ist, nichts tun.
+    let shouldRename = execute;
+
+    if (!execute && !silent && originalName !== suggestion) {
+      const response = showDialog(
+        `Dokument unlesbar - Hinweis einfügen?\n\nAlt: ${originalName}\n\nNeu: ${suggestion}`,
+        ["Umbenennen", "Skip"]
+      );
+      shouldRename = response === "Umbenennen";
+    }
+
+    if (shouldRename && originalName !== suggestion) {
+      const dir = path.dirname(filePath);
+      const newPath = path.join(dir, suggestion);
+
+      if (fs.existsSync(newPath)) {
+        console.log(chalk.yellow(`⚠️  Zieldatei existiert bereits: ${suggestion}`));
+        return { success: true, renamed: false, oldName: originalName, newName: suggestion };
       }
-      
-      if (shouldRename) {
-        const dir = path.dirname(filePath);
-        const newPath = path.join(dir, suggestion);
-        
-        if (fs.existsSync(newPath)) {
-          console.log(chalk.yellow(`⚠️  Zieldatei existiert bereits: ${suggestion}`));
-          return { success: true, renamed: false, oldName: originalName, newName: suggestion };
-        }
-        
-        try {
-          fs.renameSync(filePath, newPath);
-          recordRename(filePath, newPath);
-          console.log(chalk.green(`\n✅ Hinweis "(unlesbar)" hinzugefügt`));
-          return { success: true, renamed: true, oldName: originalName, newName: suggestion };
-        } catch (error) {
-          console.log(chalk.yellow(`⚠️  Umbenennung übersprungen`));
-          return { success: true, renamed: false, oldName: originalName, newName: suggestion };
-        }
+
+      try {
+        fs.renameSync(filePath, newPath);
+        recordRename(filePath, newPath);
+        console.log(chalk.green(`\n✅ Hinweis "(unlesbar)" hinzugefügt`));
+        return { success: true, renamed: true, oldName: originalName, newName: suggestion };
+      } catch (error) {
+        console.log(chalk.yellow(`⚠️  Umbenennung übersprungen`));
+        return { success: true, renamed: false, oldName: originalName, newName: suggestion };
       }
     }
     

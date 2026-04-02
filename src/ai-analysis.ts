@@ -344,6 +344,109 @@ export function buildFilenameFromAI(
 }
 
 /**
+ * Analyze a document image with Claude Vision (for image-based PDFs and images without extractable text)
+ */
+export async function analyzeDocumentImageWithClaude(
+  imageBase64: string,
+  mediaType: 'image/jpeg' | 'image/png',
+  config: ClaudeConfig,
+  verbose: boolean = false
+): Promise<AIDocumentAnalysis | null> {
+  if (!config.apiKey || config.apiKey.length < 10) return null;
+
+  try {
+    if (verbose) {
+      console.log(chalk.gray('📷 Claude Vision Analyse läuft...'));
+    }
+
+    const visionPrompt = `Analysiere dieses Dokumentbild und extrahiere folgende Informationen im JSON-Format:
+
+AUFGABE:
+Lies den sichtbaren Text im Bild und extrahiere:
+1. Kategorie (wähle aus: Telekommunikation, Versicherung, Gesundheit, Finanzen, Logistik, Online, Reisen, Auto, Beruf, Bildung, Wohnen, Steuern, Sonstiges)
+2. Firmenname (vollständiger Name der Firma/Absender)
+3. Dokumenttyp (z.B. Rechnung, Vertrag, Rezept, Entgeltabrechnung, Mahnung, Bescheid, Angebot, Bestellung, etc.)
+4. Keywords (bis zu 5 wichtige Schlagworte für den Dateinamen)
+5. Referenznummer (Rechnungsnummer, Kundennummer, Vertragsnummer, etc. falls vorhanden)
+6. Confidence (deine Sicherheit 0.0-1.0)
+
+ANTWORT-FORMAT (NUR JSON, keine zusätzlichen Texte):
+{
+  "category": "Kategorie",
+  "company": "Firmenname",
+  "documentType": "Dokumenttyp",
+  "keywords": ["keyword1", "keyword2", "keyword3"],
+  "referenceNumber": "Nummer oder null",
+  "confidence": 0.95
+}
+
+WICHTIG:
+- Keywords kurz und aussagekräftig (2-15 Zeichen, keine Sonderzeichen)
+- Company ohne Rechtsform (GmbH, AG) wenn möglich
+- Nur JSON zurückgeben`;
+
+    const response = await fetch(`${CLAUDE_API_URL}/v1/messages`, {
+      method: 'POST',
+      headers: {
+        'x-api-key': config.apiKey,
+        'anthropic-version': CLAUDE_API_VERSION,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: config.model || CLAUDE_DEFAULT_MODEL,
+        system: 'Du bist ein Experte für Dokumentenanalyse. Analysiere Dokumentbilder und extrahiere Metadaten. Antworte IMMER im JSON-Format.',
+        messages: [{
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: mediaType,
+                data: imageBase64
+              }
+            },
+            { type: 'text', text: visionPrompt }
+          ]
+        }],
+        max_tokens: config.maxTokens || 500,
+        temperature: config.temperature || 0.2
+      })
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      throw new Error(`Claude Vision API ${response.status}: ${error}`);
+    }
+
+    const data = await response.json();
+    const textBlock = data.content?.find((b: any) => b.type === 'text');
+    const content = textBlock?.text || null;
+
+    if (!content) return null;
+
+    const analysis = parseAIResponse(content, verbose);
+
+    if (analysis && verbose) {
+      console.log(chalk.green('✅ Vision-Analyse abgeschlossen'));
+      console.log(chalk.gray(`   Kategorie: ${analysis.category}`));
+      console.log(chalk.gray(`   Firma: ${analysis.company}`));
+      console.log(chalk.gray(`   Typ: ${analysis.documentType}`));
+      console.log(chalk.gray(`   Keywords: ${analysis.keywords.join(', ')}`));
+      console.log(chalk.gray(`   Confidence: ${(analysis.confidence * 100).toFixed(0)}%`));
+    }
+
+    return analysis;
+
+  } catch (error) {
+    if (verbose) {
+      console.log(chalk.red('❌ Fehler bei Claude Vision-Analyse:'), error instanceof Error ? error.message : error);
+    }
+    return null;
+  }
+}
+
+/**
  * Check if AI analysis is enabled and configured
  */
 export function isAIEnabled(config: AIConfig | undefined): boolean {
