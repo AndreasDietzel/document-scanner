@@ -6,22 +6,17 @@
 # Installation: Siehe MACOS-QUICK-ACTION.md
 #
 
-# Ermittle Node und doc-scan Pfade
-NODE_PATH=$(which node)
-DOC_SCAN_PATH="$HOME/.local/bin/doc-scan"
-
-# Fallback: Wenn doc-scan nicht global installiert, nutze lokale Version
-if [ ! -f "$DOC_SCAN_PATH" ]; then
-    # Versuche npm global bin zu finden
-    NPM_BIN=$(npm bin -g 2>/dev/null)
-    if [ -n "$NPM_BIN" ]; then
-        DOC_SCAN_PATH="$NPM_BIN/doc-scan"
-    fi
-fi
-
-# Wenn immer noch nicht gefunden, versuche mit npx
-if [ ! -f "$DOC_SCAN_PATH" ]; then
-    DOC_SCAN_PATH="npx doc-scan"
+# Ermittle ausführbares doc-scan Kommando robust
+if command -v doc-scan >/dev/null 2>&1; then
+    DOC_SCAN_CMD=("$(command -v doc-scan)")
+elif [ -x "$HOME/.local/bin/doc-scan" ]; then
+    DOC_SCAN_CMD=("$HOME/.local/bin/doc-scan")
+elif command -v npx >/dev/null 2>&1; then
+    # --yes verhindert interaktive Rückfragen bei npx
+    DOC_SCAN_CMD=("npx" "--yes" "doc-scan")
+else
+    osascript -e "display notification \"doc-scan nicht gefunden\" with title \"Doc Scan Fehler\" sound name \"Basso\""
+    exit 1
 fi
 
 # Iteriere über alle übergebenen Dateien (Automator übergibt sie als $@)
@@ -41,8 +36,10 @@ for file in "$@"; do
         continue
     fi
     
-    # Führe doc-scan aus (ohne --silent, damit Dialog erscheint)
-    $NODE_PATH "$DOC_SCAN_PATH" "$file"
+    # Führe doc-scan direkt im Execute-Modus aus, damit umbenannt wird
+    if ! "${DOC_SCAN_CMD[@]}" "$file" --execute; then
+        osascript -e "display notification \"Fehler bei: $(basename "$file")\" with title \"Doc Scan Fehler\" sound name \"Basso\""
+    fi
 done
 
 exit 0
