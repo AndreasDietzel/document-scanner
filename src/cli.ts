@@ -328,21 +328,23 @@ async function extractText(filePath: string, config: ScanConfig): Promise<string
       const textutilResult = extractWithTextutil(filePath);
       if (textutilResult) return textutilResult;
       if (VERBOSE) {
-        console.log(chalk.yellow(`⚠️  ${ext}-Datei konnte weder mit mammoth noch textutil gelesen werden`));
+        console.log(chalk.yellow(`⚠️  ${ext}-Datei konnte weder mit mammoth noch textutil gelesen werden, gebe Dateinamen zurück`));
       }
-      return '';
+      // Dateiname als Kontext zurückgeben für AI-Namensanalyse
+      return path.basename(filePath);
     }
     
     // Microsoft Excel
     if (ext === '.xls' || ext === '.xlsx') {
-      if (VERBOSE) console.log(chalk.yellow('⚠️  Excel-Datei - kein Text extrahierbar (nutze Dateinamen)'));
-      return '';
+      if (VERBOSE) console.log(chalk.yellow('⚠️  Excel-Datei - kein Textinhalt extrahierbar, gebe Dateinamen zurück'));
+      // Dateiname als Kontext zurückgeben, damit AI-Namensanalyse auf Basis des Namens arbeiten kann
+      return path.basename(filePath);
     }
     
     // Microsoft PowerPoint
     if (ext === '.ppt' || ext === '.pptx') {
-      if (VERBOSE) console.log(chalk.yellow('⚠️  PowerPoint-Datei - kein Text extrahierbar (nutze Dateinamen)'));
-      return '';
+      if (VERBOSE) console.log(chalk.yellow('⚠️  PowerPoint-Datei - kein Textinhalt extrahierbar, gebe Dateinamen zurück'));
+      return path.basename(filePath);
     }
     
     // Apple Numbers / Keynote — Protobuf-Format, kein Klartext extrahierbar
@@ -804,7 +806,9 @@ async function processFile(
         if (imageData.tempPath) {
           try { fs.unlinkSync(imageData.tempPath); } catch { /* ignore */ }
         }
-        if (visionAnalysis && visionAnalysis.confidence >= (CONFIG.aiConfidenceThreshold || 0.5)) {
+        // Für textlose Dateien (keine Alternative) niedrigeren Threshold nutzen
+        const visionThreshold = 0.3;
+        if (visionAnalysis && visionAnalysis.confidence >= visionThreshold) {
           const timestamp = await extractTimestamp(originalName, filePath, '');
           const suggestion = buildFilenameFromAI(visionAnalysis, timestamp, ext);
 
